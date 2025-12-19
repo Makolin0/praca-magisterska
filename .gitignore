@@ -1,1 +1,6 @@
 .DS_store
+.venv
+*.pgn
+*.gz
+pgn-extract
+trainingdata-tool
