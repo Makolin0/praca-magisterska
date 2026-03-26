@@ -5,7 +5,7 @@
 
 <https://github.com/LeelaChessZero/lczero-training/pull/213>
 
-https://help.clouding.io/hc/en-us/articles/13555555842588-How-to-install-different-versions-of-Python-on-Ubuntu
+<https://help.clouding.io/hc/en-us/articles/13555555842588-How-to-install-different-versions-of-Python-on-Ubuntu>
 
 ## Przygotowanie środowiska
 
