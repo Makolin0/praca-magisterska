@@ -4,3 +4,12 @@
 *.gz
 pgn-extract
 trainingdata-tool
+
+*.snm
+*.aux
+*latexmk
+*.nav
+*.log
+*.fls
+*.out
+*.toc
