@@ -12,7 +12,7 @@ https://help.clouding.io/hc/en-us/articles/13555555842588-How-to-install-differe
 Zależności
 
 ```bash
-sudo apt-get update && sudo apt-get install -y cmake libboost-all-dev
+sudo apt-get update && sudo apt-get install -y cmake libboost-all-dev zstd
 ```
 
 ### Python
@@ -25,11 +25,16 @@ curl -fsSL https://pyenv.run | bash
 pyenv install 3.6.15
 ```
 
-Tworzymy virtual enviroment
+Tworzymy virtual enviroment i pobieramy requirements.txt
 
 ### baza danych gier
 
 <https://database.lichess.org>
+
+```bash
+wget https://database.lichess.org/standard/lichess_db_standard_rated_2014-05.pgn.zst
+unzstd lichess_db_standard_rated_2014-05.pgn.zst -o raw_db.pgn
+```
 
 ### pgn-extract
 
@@ -39,9 +44,10 @@ Program filtrujący bazę danych z grami szachowymi
 git clone https://github.com/kentdjb/pgn-extract
 cd pgn-extract
 make
+cd ..
+mv ./pgn-extract ./pgn-extract-repo
+mv ./pgn-extract-repo/pgn-extract ./pgn-extract
 ```
-
-### Python
 
 ### trainingdata-tool
 
@@ -56,8 +62,10 @@ mkdir -p build && cd build
 cmake -DCMAKE_CXX_FLAGS="-include cstdint -fpermissive" -DCMAKE_CXX_STANDARD=14 ..
 # cmake -DCMAKE_CXX_STANDARD=14 ..
 cmake --build .
+cd ../..
+mv ./trainingdata-tool ./trainingdata-tool-repo
+mv ./trainingdata-tool-repo/build/trainingdata-tool ./trainingdata-tool
 ```
-
 
 ### lczero-training
 
@@ -68,6 +76,7 @@ PROTOC_ZIP=protoc-3.12.4-linux-x86_64.zip
 curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.12.4/$PROTOC_ZIP
 sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
 sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+sudo chmod +rx /usr/local/bin/protoc
 rm -f $PROTOC_ZIP
 ```
 
@@ -77,8 +86,6 @@ instalacja
 git clone https://github.com/LeelaChessZero/lczero-training
 cd lczero-training
 git submodule update --init --recursive
-
-pip install -r ../requirements.txt
 
 ./init.sh
 ```
