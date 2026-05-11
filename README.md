@@ -1,31 +1,41 @@
 
 # Eksperyment uczenia sieci stopniowo danymi lepszej jakości
 
-<https://github.com/LeelaChessZero/lczero-training/issues/195\>
+modyfikacja run docker w nnue-pytorch
 
-<https://github.com/LeelaChessZero/lczero-training/pull/213>
-
-<https://help.clouding.io/hc/en-us/articles/13555555842588-How-to-install-different-versions-of-Python-on-Ubuntu>
+```bash
+docker run -it \
+  $GPU_FLAGS \
+  $USER_FLAG \
+  --group-add render \
+  --group-add video \
+  --group-add kvm \
+  -v "$(pwd)":/workspace/nnue-pytorch \
+  -v "$DATA_PATH":/data \
+  --ipc=host \
+  --ulimit memlock=-1 \
+  --ulimit stack=67108864 \
+  $IMAGE_TAG
+```
 
 ## Przygotowanie środowiska
+
+Osobiście pracowałem z:
+
+- Ubuntu 24
+- GPU rx 6800xt
+- Python 3.12.3
 
 Zależności
 
 ```bash
-sudo apt-get update && sudo apt-get install -y cmake libboost-all-dev zstd
+sudo apt-get update && sudo apt-get install -y zstd make g++
 ```
 
-### Python
+Środowisko python
 
-```bash
-curl -fsSL https://pyenv.run | bash
-```
+- `setup_env.ipynb` - pobranie i kompilacja narzędzi
 
-```bash
-pyenv install 3.6.15
-```
-
-Tworzymy virtual enviroment i pobieramy requirements.txt
 
 ### baza danych gier
 
@@ -69,7 +79,7 @@ mv ./trainingdata-tool-repo/build/trainingdata-tool ./trainingdata-tool
 
 ### lczero-training
 
-Specyficzna wersja protocol buffers 
+Specyficzna wersja protocol buffers
 
 ```bash
 PROTOC_ZIP=protoc-3.12.4-linux-x86_64.zip

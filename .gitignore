@@ -13,3 +13,5 @@ trainingdata-tool
 *.fls
 *.out
 *.toc
+
+data
