@@ -36,28 +36,13 @@ sudo apt-get update && sudo apt-get install -y zstd make g++
 
 - `setup_env.ipynb` - pobranie i kompilacja narzędzi
 
-
-### baza danych gier
+## baza danych gier
 
 <https://database.lichess.org>
 
-```bash
-wget https://database.lichess.org/standard/lichess_db_standard_rated_2014-05.pgn.zst
-unzstd lichess_db_standard_rated_2014-05.pgn.zst -o raw_db.pgn
-```
+Skrypt python który pobierze, podzieli i zmieni typ kompatybilny z danymi wejściowymi modelu
 
-### pgn-extract
-
-Program filtrujący bazę danych z grami szachowymi
-
-```bash
-git clone https://github.com/kentdjb/pgn-extract
-cd pgn-extract
-make
-cd ..
-mv ./pgn-extract ./pgn-extract-repo
-mv ./pgn-extract-repo/pgn-extract ./pgn-extract
-```
+## losowe nwm czy aktualne
 
 ### trainingdata-tool
 
@@ -98,13 +83,6 @@ cd lczero-training
 git submodule update --init --recursive
 
 ./init.sh
-```
-
-## preprocessing danych
-
-```bash
-./pgn-extract -7 -C -s --stopafter 100000 -o output.pgn input.pgn
-./trainingdata-tool output.pgn
 ```
 
 ## Trenowanie
