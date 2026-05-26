@@ -15,3 +15,6 @@ trainingdata-tool
 *.toc
 
 data
+
+pgn_splitter/target
+cutechess-cli
