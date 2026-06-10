@@ -15,4 +15,4 @@
   - [ ] Końcowy cel
   - [ ] Czemu taka praca
   - [ ] Poprzednie próby i porazki
-  - [ ] 
+  - [ ] a

@@ -17,4 +17,7 @@ trainingdata-tool
 data
 
 pgn_splitter/target
-cutechess-cli
+cutechess*
+Cute_Chess-1.4.0-x86_64.AppImage
+stockfish*
+UHO*

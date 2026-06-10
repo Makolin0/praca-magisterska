@@ -1,6 +1,8 @@
+use std::env;
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
+use std::process;
 
 // Define Elo thresholds for the 6 compartments
 fn get_compartment_index(avg_elo: u32) -> usize {
@@ -13,17 +15,37 @@ fn get_compartment_index(avg_elo: u32) -> usize {
 }
 
 fn main() -> io::Result<()> {
-    let input_path = "lichess_db.pgn"; 
+    // Collect command line arguments
+    let args: Vec<String> = env::args().collect();
+    
+    // Check if the file path was provided (index 0 is the binary name, index 1 is the file)
+    if args.len() < 2 {
+        eprintln!("Error: Missing input PGN file path.");
+        eprintln!("Usage: cargo run -- <path_to_file.pgn>");
+        process::exit(1);
+    }
+    
+    let input_path = &args[1]; 
+    println!("Opening input file: {}", input_path);
+
     let file = File::open(input_path)?;
     let reader = BufReader::with_capacity(1024 * 1024, file); // 1MB buffer size for fast I/O
 
+    // let file_names = [
+    //     "comp_1200_under.pgn",
+    //     "comp_1200_1500.pgn",
+    //     "comp_1500_1800.pgn",
+    //     "comp_1800_2100.pgn",
+    //     "comp_2100_2400.pgn",
+    //     "comp_2400_above.pgn",
+    // ];
     let file_names = [
-        "comp_1200_under.pgn",
-        "comp_1200_1500.pgn",
-        "comp_1500_1800.pgn",
-        "comp_1800_2100.pgn",
-        "comp_2100_2400.pgn",
-        "comp_2400_above.pgn",
+        "comp_1200_under_test.pgn",
+        "comp_1200_1500_test.pgn",
+        "comp_1500_1800_test.pgn",
+        "comp_1800_2100_test.pgn",
+        "comp_2100_2400_test.pgn",
+        "comp_2400_above_test.pgn",
     ];
 
     let mut writers: Vec<BufWriter<File>> = file_names
@@ -38,6 +60,9 @@ fn main() -> io::Result<()> {
             BufWriter::with_capacity(1024 * 1024, file)
         })
         .collect();
+
+    // Track game counts per individual bucket
+    let mut bucket_counters = [0u64; 6];
 
     // Reusable buffers to minimize heap allocations during loops
     let mut game_buffer = String::with_capacity(4096);
@@ -109,6 +134,8 @@ fn main() -> io::Result<()> {
             if let Some(avg_elo) = resolved_avg_elo {
                 let comp_idx = get_compartment_index(avg_elo);
                 writers[comp_idx].write_all(game_buffer.as_bytes())?;
+                
+                bucket_counters[comp_idx] += 1; // Increment the specific bucket counter
                 game_counter += 1;
             } else {
                 skipped_counter += 1;
@@ -130,8 +157,15 @@ fn main() -> io::Result<()> {
         writer.flush()?;
     }
 
-    println!("Done!");
+    println!("\n--- Final Statistics ---");
     println!("Total games written: {}", game_counter);
     println!("Total games skipped: {}", skipped_counter);
+    println!("\nBreakdown by bucket:");
+    
+    // Print the count of every individual bucket
+    for (name, count) in file_names.iter().zip(bucket_counters.iter()) {
+        println!("  {}: {}", name, count);
+    }
+
     Ok(())
 }
