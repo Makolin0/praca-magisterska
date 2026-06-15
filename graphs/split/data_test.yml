@@ -1,0 +1,11 @@
+file: lichess_db_standard_rated_2017-06.pgn (test)
+
+Total games written: 11512600
+
+Breakdown by bucket:
+  0 - 1200: 596768
+  1200 - 1500: 2791330
+  1500 - 1800: 4737167
+  1800 - 2100: 2839121
+  2100 - 2400: 515223
+  2400+: 32991

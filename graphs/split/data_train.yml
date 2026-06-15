@@ -1,0 +1,11 @@
+file: lichess_db_standard_rated_2026-03.pgn (train)
+
+Total games split: 90074196
+
+Breakdown by bucket:
+  0 - 1200: 13229986
+  1200 - 1500: 19009735
+  1500 - 1800: 25504770
+  1800 - 2100: 21385618
+  2100 - 2400: 8662017
+  2400+: 2282070

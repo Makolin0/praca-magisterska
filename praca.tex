@@ -1,0 +1,122 @@
+\documentclass[12pt,a4paper]{report}
+
+% --- Pakiety podstawowe ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+% --- Metadane ---
+\title{Uczenie silnika szachowego na partiach o rosnącym Elo}
+\author{Adam Zieliński}
+\date{\today}
+
+\begin{document}
+
+% --- Strona tytułowa (uproszczona) ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Large Uniwersytet Mikołaja Kopernika w Toruniu\\ Wydział Matematyki i Informatyki \par}
+    \vspace{3cm}
+    {\Huge \textbf{Uczenie silnika szachowego na partiach o rosnącym Elo} \par}
+    \vspace{2cm}
+    {\Large Praca magisterska \par}
+    \vspace{2cm}
+    {\Large Autor: Adam Zieliński \par}
+    {\Large Promotor: dr hab. Łukasz Mikulski, prof. UMK \par}
+    \vfill
+    {\Large Toruń, 2026 \par}
+\end{titlepage}
+
+\tableofcontents
+
+\chapter*{Streszczenie}
+Niniejsza praca bada wpływ uczenia progresywnego (\textit{curriculum learning}) na proces trenowania sieci neuronowych w silnikach szachowych. Głównym celem jest sprawdzenie, czy uczenie modelu na danych o stopniowo rosnącym poziomie trudności (Elo) wpływa na szybkość zbieżności, siłę gry oraz styl modelu końcowego w porównaniu do klasycznego podejścia.
+
+\chapter{Wstęp}
+\section{Motywacja}
+% Na podstawie README_AI.md: Rozwinięcie pracy inżynierskiej, asystent uczący się z graczem.
+
+Pierwszym celem jaki chciałem osiągnąć było stworzenie partnera do trenowania gry w szachy, w taki sposób aby zawsze był na poziomie gracza, potencjalnie lekko silniejszym, aby gracz podczas każdej rozgrywki mógł doświadczać tzw. stanu flow, gdzie nie czuje nudy przez zbyt słabego przeciwnika ani frustracji gdy jest zbyt silny. Aby dopasować poziom trudności silnika, uznałem że dobrym rozwiązaniem byłoby douczanie sieci za każdym razem gdy procent wygranych gracza przekroczy pewną wartość. Wtedy danymi uczącymi byłyby rozgrywki lekko wyprzedzające aktualne ELO gracza. Aby zbadać czy taka implementacja spełniałaby moje oczekiwania, uznałem że wpierw przeprowadzę eksperyment aby zbadać jak będzie zachowywać się silnik uczony grami o coraz to lepszej jakości. 
+
+\section{Cel pracy}
+% Badanie zachowania silnika NN podczas uczenia na danych o rosnącym poziomie umiejętności.
+
+\section{Hipotezy badawcze}
+\begin{itemize}
+    \item \textbf{H1: Szybsza nauka cech.} Model szybciej odnajdzie wzorce na prostszych danych.
+    \item \textbf{H2: Ludzki styl gry.} Model będzie unikał losowości typowej dla silników uczonych na "czystej taktyce".
+    \item \textbf{H3: Korelacja Elo.} Zależność między rankingiem zbioru treningowego a siłą gry modelu.
+\end{itemize}
+
+\chapter{Przegląd technologii}
+\section{Silnik Stockfish i architektura NNUE}
+% Opis Stockfish NNUE, nnue-pytorch.
+\section{Baza danych Lichess}
+\section{Narzędzia pomocnicze}
+% pgn-extract, cutechess, Ordo.
+
+\chapter{Przygotowanie danych}
+\section{Pozyskiwanie i filtrowanie danych (PGN)}
+% Opis użycia pgn-extract, parametry minply, nobadresults.
+\section{Podział na koszyki Elo}
+% Algorytm podziału gier na przedziały rankingowe.
+\section{Transformacja do formatu binpack}
+% pgn -> plain -> binpack.
+
+\chapter{Proces uczenia}
+\section{Architektura eksperymentu}
+% Porównanie modelu badawczego z kontrolnym.
+\section{Parametry treningu}
+% Batch size, lambda (0.3), learning rate, features (HalfKAv2_hm^).
+\section{Infrastruktura obliczeniowa}
+% Środowisko Docker, GPU RX 6800xt.
+
+\chapter{Ewaluacja i wyniki}
+\section{Metryki oceny}
+\begin{itemize}
+    \item Ranking Elo (turnieje Cutechess).
+    \item Zgodność z ruchami ludzkimi (Human-like Index).
+    \item Krzywe funkcji straty (Loss Curve).
+\end{itemize}
+\section{Wyniki eksperymentu}
+% Analiza porównawcza epok.
+\section{Analiza skoków rozwojowych}
+% Czy zmiana koszyka Elo powoduje gwałtowny wzrost siły gry?
+
+\chapter{Wnioski}
+\section{Weryfikacja hipotez}
+\section{Zastosowania praktyczne}
+% Interaktywny asystent szachowy.
+\section{Kierunki dalszych badań}
+
+\begin{thebibliography}{99}
+    \bibitem{stockfish} Stockfish Team, \textit{Stockfish: A powerful open-source chess engine}, \url{https://github.com/official-stockfish/Stockfish}.
+    \bibitem{nnuepytorch} Official Stockfish, \textit{nnue-pytorch}, \url{https://github.com/official-stockfish/nnue-pytorch}.
+    \bibitem{lichess} Lichess Database, \url{https://database.lichess.org}.
+\end{thebibliography}
+
+\listoffigures
+\listoftables
+
+\chapter*{Dodatek A: Skrypty automatyzujące}
+\begin{lstlisting}[language=bash, caption=Przykładowe uruchomienie treningu]
+python train.py \
+    /data/input/binpack/clean_1200_under_2mil.binpack \
+    --validation-datasets /data/input/binpack/clean_1200_under_200k_test.binpack \
+    --gpus 0 \
+    --lambda 0.3 \
+    --features "HalfKAv2_hm^"
+\end{lstlisting}
+
+\end{document}

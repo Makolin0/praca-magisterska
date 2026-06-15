@@ -19,16 +19,18 @@ COMPARE_MODE = "adjacent"
 # ==========================================
 
 
+NEW_NETS_DIR = "/home/adamz/Documents/praca-magisterska/data/nnue/1500_1800" # Directory containing the .nnue files to test
+OUTPUT_JSON_PATH = "/home/adamz/Documents/praca-magisterska/data/engines/1500_1800/tournament_results.json"
+
+# GLOBAL PERSISTENT BINARY CACHE DIRECTORY
+COMPILED_BIN_DIR = "/home/adamz/Documents/praca-magisterska/data/engines/1500_1800"
+os.makedirs(COMPILED_BIN_DIR, exist_ok=True)
+
+
+
 # Paths to your core directories
 STOCKFISH_SRC_DIR = "/home/adamz/Documents/praca-magisterska/stockfish-source/src"  # Must point to Stockfish's 'src' directory
 CUTECHESS_CLI_PATH = "/home/adamz/Documents/praca-magisterska/cutechess-cli"          # Change to absolute path if not in system PATH
-NEW_NETS_DIR = "/home/adamz/Documents/praca-magisterska/data/nnue/1200_under" # Directory containing the .nnue files to test
-OUTPUT_JSON_PATH = "/home/adamz/Documents/praca-magisterska/data/engines/1200_under/tournament_results.json"
-
-# GLOBAL PERSISTENT BINARY CACHE DIRECTORY
-COMPILED_BIN_DIR = "/home/adamz/Documents/praca-magisterska/data/engines/1200_under"
-os.makedirs(COMPILED_BIN_DIR, exist_ok=True)
-
 
 # Hardware / Compilation settings
 CPU_ARCH = "x86-64-bmi2"                      # e.g., x86-64-bmi2, x86-64-avx2, apple-silicon

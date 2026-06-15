@@ -1,0 +1,872 @@
+{
+    "epoch_10_vs_epoch_20": {
+        "engine_a": "epoch_10",
+        "engine_b": "epoch_20",
+        "match_metrics": {
+            "elo_diff": 6.1,
+            "error_margin": 24.5,
+            "wins": 107,
+            "losses": 100,
+            "draws": 193,
+            "los_percent": 68.7,
+            "draw_ratio_percent": 48.3,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 23",
+                "   \"Draw by insufficient mating material\": 36",
+                "   \"Draw by stalemate\": 4",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 99",
+                "   \"Win: White mates\": 107",
+                "Player: 20",
+                "   \"Draw by 3-fold repetition\": 130",
+                "   \"Draw by fifty moves rule\": 23",
+                "   \"Draw by insufficient mating material\": 36",
+                "   \"Draw by stalemate\": 4",
+                "   \"Loss: White mates\": 107",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 99",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_20_vs_epoch_30": {
+        "engine_a": "epoch_20",
+        "engine_b": "epoch_30",
+        "match_metrics": {
+            "elo_diff": 7.8,
+            "error_margin": 25.1,
+            "wins": 113,
+            "losses": 104,
+            "draws": 183,
+            "los_percent": 72.9,
+            "draw_ratio_percent": 45.8,
+            "raw_output": [
+                "   \"Draw by stalemate\": 4",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 102",
+                "   \"Win: Black mates\": 4",
+                "   \"Win: White mates\": 109",
+                "Player: 30",
+                "   \"Draw by 3-fold repetition\": 123",
+                "   \"Draw by fifty moves rule\": 24",
+                "   \"Draw by insufficient mating material\": 32",
+                "   \"Draw by stalemate\": 4",
+                "   \"Loss: Black mates\": 4",
+                "   \"Loss: White mates\": 109",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 102",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_30_vs_epoch_40": {
+        "engine_a": "epoch_30",
+        "engine_b": "epoch_40",
+        "match_metrics": {
+            "elo_diff": -6.9,
+            "error_margin": 24.8,
+            "wins": 102,
+            "losses": 110,
+            "draws": 188,
+            "los_percent": 29.1,
+            "draw_ratio_percent": 47.0,
+            "raw_output": [
+                "   \"Draw by stalemate\": 7",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 109",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 100",
+                "Player: 40",
+                "   \"Draw by 3-fold repetition\": 121",
+                "   \"Draw by fifty moves rule\": 22",
+                "   \"Draw by insufficient mating material\": 38",
+                "   \"Draw by stalemate\": 7",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 100",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 109",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_40_vs_epoch_50": {
+        "engine_a": "epoch_40",
+        "engine_b": "epoch_50",
+        "match_metrics": {
+            "elo_diff": -0.9,
+            "error_margin": 23.8,
+            "wins": 97,
+            "losses": 98,
+            "draws": 205,
+            "los_percent": 47.1,
+            "draw_ratio_percent": 51.2,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 30",
+                "   \"Draw by insufficient mating material\": 32",
+                "   \"Draw by stalemate\": 14",
+                "   \"Loss: White mates\": 98",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 94",
+                "Player: 50",
+                "   \"Draw by 3-fold repetition\": 129",
+                "   \"Draw by fifty moves rule\": 30",
+                "   \"Draw by insufficient mating material\": 32",
+                "   \"Draw by stalemate\": 14",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 94",
+                "   \"Win: White mates\": 98",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_50_vs_epoch_60": {
+        "engine_a": "epoch_50",
+        "engine_b": "epoch_60",
+        "match_metrics": {
+            "elo_diff": -2.6,
+            "error_margin": 23.9,
+            "wins": 97,
+            "losses": 100,
+            "draws": 203,
+            "los_percent": 41.5,
+            "draw_ratio_percent": 50.7,
+            "raw_output": [
+                "   \"Draw by stalemate\": 11",
+                "   \"Loss: Black loses on time\": 2",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 97",
+                "   \"Win: White mates\": 97",
+                "Player: 60",
+                "   \"Draw by 3-fold repetition\": 126",
+                "   \"Draw by fifty moves rule\": 22",
+                "   \"Draw by insufficient mating material\": 44",
+                "   \"Draw by stalemate\": 11",
+                "   \"Loss: White mates\": 97",
+                "   \"Win: Black loses on time\": 2",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 97",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_60_vs_epoch_70": {
+        "engine_a": "epoch_60",
+        "engine_b": "epoch_70",
+        "match_metrics": {
+            "elo_diff": -7.8,
+            "error_margin": 24.1,
+            "wins": 96,
+            "losses": 105,
+            "draws": 199,
+            "los_percent": 26.3,
+            "draw_ratio_percent": 49.8,
+            "raw_output": [
+                "   \"Loss: White mates\": 104",
+                "   \"Win: Black loses on time\": 1",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 94",
+                "Player: 70",
+                "   \"Draw by 3-fold repetition\": 133",
+                "   \"Draw by fifty moves rule\": 23",
+                "   \"Draw by insufficient mating material\": 33",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black loses on time\": 1",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 94",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 104",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_70_vs_epoch_80": {
+        "engine_a": "epoch_70",
+        "engine_b": "epoch_80",
+        "match_metrics": {
+            "elo_diff": 1.7,
+            "error_margin": 25.4,
+            "wins": 112,
+            "losses": 110,
+            "draws": 178,
+            "los_percent": 55.3,
+            "draw_ratio_percent": 44.5,
+            "raw_output": [
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 4",
+                "   \"Loss: White mates\": 106",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 110",
+                "Player: 80",
+                "   \"Draw by 3-fold repetition\": 106",
+                "   \"Draw by fifty moves rule\": 21",
+                "   \"Draw by insufficient mating material\": 41",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 110",
+                "   \"Win: Black mates\": 4",
+                "   \"Win: White mates\": 106",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_80_vs_epoch_90": {
+        "engine_a": "epoch_80",
+        "engine_b": "epoch_90",
+        "match_metrics": {
+            "elo_diff": -1.7,
+            "error_margin": 24.7,
+            "wins": 104,
+            "losses": 106,
+            "draws": 190,
+            "los_percent": 44.5,
+            "draw_ratio_percent": 47.5,
+            "raw_output": [
+                "   \"Draw by stalemate\": 5",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 103",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 103",
+                "Player: 90",
+                "   \"Draw by 3-fold repetition\": 130",
+                "   \"Draw by fifty moves rule\": 19",
+                "   \"Draw by insufficient mating material\": 36",
+                "   \"Draw by stalemate\": 5",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 103",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 103",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_90_vs_epoch_100": {
+        "engine_a": "epoch_90",
+        "engine_b": "epoch_100",
+        "match_metrics": {
+            "elo_diff": 13.0,
+            "error_margin": 24.3,
+            "wins": 109,
+            "losses": 94,
+            "draws": 197,
+            "los_percent": 85.4,
+            "draw_ratio_percent": 49.3,
+            "raw_output": [
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 91",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 106",
+                "Player: 100",
+                "   \"Draw by 3-fold repetition\": 128",
+                "   \"Draw by fifty moves rule\": 29",
+                "   \"Draw by insufficient mating material\": 30",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 106",
+                "   \"Win: Black loses on time\": 1",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 91",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_100_vs_epoch_110": {
+        "engine_a": "epoch_100",
+        "engine_b": "epoch_110",
+        "match_metrics": {
+            "elo_diff": -2.6,
+            "error_margin": 24.7,
+            "wins": 104,
+            "losses": 107,
+            "draws": 189,
+            "los_percent": 41.8,
+            "draw_ratio_percent": 47.3,
+            "raw_output": [
+                "Player: 100",
+                "   \"Draw by 3-fold repetition\": 126",
+                "   \"Draw by fifty moves rule\": 21",
+                "   \"Draw by insufficient mating material\": 29",
+                "   \"Draw by stalemate\": 13",
+                "   \"Loss: White mates\": 107",
+                "   \"Win: White mates\": 104",
+                "Player: 110",
+                "   \"Draw by 3-fold repetition\": 126",
+                "   \"Draw by fifty moves rule\": 21",
+                "   \"Draw by insufficient mating material\": 29",
+                "   \"Draw by stalemate\": 13",
+                "   \"Loss: White mates\": 104",
+                "   \"Win: White mates\": 107",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_110_vs_epoch_120": {
+        "engine_a": "epoch_110",
+        "engine_b": "epoch_120",
+        "match_metrics": {
+            "elo_diff": 13.0,
+            "error_margin": 25.2,
+            "wins": 117,
+            "losses": 102,
+            "draws": 181,
+            "los_percent": 84.5,
+            "draw_ratio_percent": 45.3,
+            "raw_output": [
+                "   \"Draw by stalemate\": 6",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 101",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 116",
+                "Player: 120",
+                "   \"Draw by 3-fold repetition\": 116",
+                "   \"Draw by fifty moves rule\": 27",
+                "   \"Draw by insufficient mating material\": 32",
+                "   \"Draw by stalemate\": 6",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 116",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 101",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_120_vs_epoch_130": {
+        "engine_a": "epoch_120",
+        "engine_b": "epoch_130",
+        "match_metrics": {
+            "elo_diff": -0.9,
+            "error_margin": 25.3,
+            "wins": 110,
+            "losses": 111,
+            "draws": 179,
+            "los_percent": 47.3,
+            "draw_ratio_percent": 44.8,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 19",
+                "   \"Draw by insufficient mating material\": 30",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: White mates\": 111",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 109",
+                "Player: 130",
+                "   \"Draw by 3-fold repetition\": 120",
+                "   \"Draw by fifty moves rule\": 19",
+                "   \"Draw by insufficient mating material\": 30",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 109",
+                "   \"Win: White mates\": 111",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_130_vs_epoch_140": {
+        "engine_a": "epoch_130",
+        "engine_b": "epoch_140",
+        "match_metrics": {
+            "elo_diff": -13.0,
+            "error_margin": 24.4,
+            "wins": 95,
+            "losses": 110,
+            "draws": 195,
+            "los_percent": 14.7,
+            "draw_ratio_percent": 48.8,
+            "raw_output": [
+                "   \"Draw by stalemate\": 6",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 108",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 94",
+                "Player: 140",
+                "   \"Draw by 3-fold repetition\": 141",
+                "   \"Draw by fifty moves rule\": 21",
+                "   \"Draw by insufficient mating material\": 27",
+                "   \"Draw by stalemate\": 6",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 94",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 108",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_140_vs_epoch_150": {
+        "engine_a": "epoch_140",
+        "engine_b": "epoch_150",
+        "match_metrics": {
+            "elo_diff": -5.2,
+            "error_margin": 24.6,
+            "wins": 101,
+            "losses": 107,
+            "draws": 192,
+            "los_percent": 33.9,
+            "draw_ratio_percent": 48.0,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 28",
+                "   \"Draw by insufficient mating material\": 33",
+                "   \"Draw by stalemate\": 4",
+                "   \"Loss: White mates\": 107",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 98",
+                "Player: 150",
+                "   \"Draw by 3-fold repetition\": 127",
+                "   \"Draw by fifty moves rule\": 28",
+                "   \"Draw by insufficient mating material\": 33",
+                "   \"Draw by stalemate\": 4",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 98",
+                "   \"Win: White mates\": 107",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_150_vs_epoch_160": {
+        "engine_a": "epoch_150",
+        "engine_b": "epoch_160",
+        "match_metrics": {
+            "elo_diff": -6.9,
+            "error_margin": 24.9,
+            "wins": 103,
+            "losses": 111,
+            "draws": 186,
+            "los_percent": 29.2,
+            "draw_ratio_percent": 46.5,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 22",
+                "   \"Draw by insufficient mating material\": 26",
+                "   \"Draw by stalemate\": 9",
+                "   \"Loss: White mates\": 111",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 102",
+                "Player: 160",
+                "   \"Draw by 3-fold repetition\": 129",
+                "   \"Draw by fifty moves rule\": 22",
+                "   \"Draw by insufficient mating material\": 26",
+                "   \"Draw by stalemate\": 9",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 102",
+                "   \"Win: White mates\": 111",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_160_vs_epoch_170": {
+        "engine_a": "epoch_160",
+        "engine_b": "epoch_170",
+        "match_metrics": {
+            "elo_diff": -17.4,
+            "error_margin": 23.7,
+            "wins": 87,
+            "losses": 107,
+            "draws": 206,
+            "los_percent": 7.6,
+            "draw_ratio_percent": 51.5,
+            "raw_output": [
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 105",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 86",
+                "Player: 170",
+                "   \"Draw by 3-fold repetition\": 140",
+                "   \"Draw by fifty moves rule\": 25",
+                "   \"Draw by insufficient mating material\": 31",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 86",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 105",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_170_vs_epoch_180": {
+        "engine_a": "epoch_170",
+        "engine_b": "epoch_180",
+        "match_metrics": {
+            "elo_diff": -0.9,
+            "error_margin": 24.6,
+            "wins": 104,
+            "losses": 105,
+            "draws": 191,
+            "los_percent": 47.2,
+            "draw_ratio_percent": 47.8,
+            "raw_output": [
+                "   \"Draw by stalemate\": 19",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 104",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 101",
+                "Player: 180",
+                "   \"Draw by 3-fold repetition\": 123",
+                "   \"Draw by fifty moves rule\": 20",
+                "   \"Draw by insufficient mating material\": 29",
+                "   \"Draw by stalemate\": 19",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 101",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 104",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_180_vs_epoch_190": {
+        "engine_a": "epoch_180",
+        "engine_b": "epoch_190",
+        "match_metrics": {
+            "elo_diff": -13.9,
+            "error_margin": 24.3,
+            "wins": 94,
+            "losses": 110,
+            "draws": 196,
+            "los_percent": 13.1,
+            "draw_ratio_percent": 49.0,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 29",
+                "   \"Draw by insufficient mating material\": 36",
+                "   \"Draw by stalemate\": 11",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 107",
+                "   \"Win: White mates\": 94",
+                "Player: 190",
+                "   \"Draw by 3-fold repetition\": 120",
+                "   \"Draw by fifty moves rule\": 29",
+                "   \"Draw by insufficient mating material\": 36",
+                "   \"Draw by stalemate\": 11",
+                "   \"Loss: White mates\": 94",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 107",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_190_vs_epoch_200": {
+        "engine_a": "epoch_190",
+        "engine_b": "epoch_200",
+        "match_metrics": {
+            "elo_diff": -6.1,
+            "error_margin": 23.8,
+            "wins": 94,
+            "losses": 101,
+            "draws": 205,
+            "los_percent": 30.8,
+            "draw_ratio_percent": 51.2,
+            "raw_output": [
+                "Player: 190",
+                "   \"Draw by 3-fold repetition\": 133",
+                "   \"Draw by fifty moves rule\": 27",
+                "   \"Draw by insufficient mating material\": 38",
+                "   \"Draw by stalemate\": 7",
+                "   \"Loss: White mates\": 101",
+                "   \"Win: White mates\": 94",
+                "Player: 200",
+                "   \"Draw by 3-fold repetition\": 133",
+                "   \"Draw by fifty moves rule\": 27",
+                "   \"Draw by insufficient mating material\": 38",
+                "   \"Draw by stalemate\": 7",
+                "   \"Loss: White mates\": 94",
+                "   \"Win: White mates\": 101",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_200_vs_epoch_210": {
+        "engine_a": "epoch_200",
+        "engine_b": "epoch_210",
+        "match_metrics": {
+            "elo_diff": 6.1,
+            "error_margin": 25.4,
+            "wins": 115,
+            "losses": 108,
+            "draws": 177,
+            "los_percent": 68.0,
+            "draw_ratio_percent": 44.3,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 33",
+                "   \"Draw by insufficient mating material\": 31",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: White mates\": 108",
+                "   \"Win: Black mates\": 4",
+                "   \"Win: White mates\": 111",
+                "Player: 210",
+                "   \"Draw by 3-fold repetition\": 103",
+                "   \"Draw by fifty moves rule\": 33",
+                "   \"Draw by insufficient mating material\": 31",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 4",
+                "   \"Loss: White mates\": 111",
+                "   \"Win: White mates\": 108",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_210_vs_epoch_220": {
+        "engine_a": "epoch_210",
+        "engine_b": "epoch_220",
+        "match_metrics": {
+            "elo_diff": 1.7,
+            "error_margin": 24.2,
+            "wins": 102,
+            "losses": 100,
+            "draws": 198,
+            "los_percent": 55.6,
+            "draw_ratio_percent": 49.5,
+            "raw_output": [
+                "   \"Draw by stalemate\": 7",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 99",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 101",
+                "Player: 220",
+                "   \"Draw by 3-fold repetition\": 126",
+                "   \"Draw by fifty moves rule\": 31",
+                "   \"Draw by insufficient mating material\": 34",
+                "   \"Draw by stalemate\": 7",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 101",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 99",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_220_vs_epoch_230": {
+        "engine_a": "epoch_220",
+        "engine_b": "epoch_230",
+        "match_metrics": {
+            "elo_diff": 2.6,
+            "error_margin": 23.7,
+            "wins": 98,
+            "losses": 95,
+            "draws": 207,
+            "los_percent": 58.5,
+            "draw_ratio_percent": 51.7,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 25",
+                "   \"Draw by insufficient mating material\": 47",
+                "   \"Draw by stalemate\": 8",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 92",
+                "   \"Win: White mates\": 98",
+                "Player: 230",
+                "   \"Draw by 3-fold repetition\": 127",
+                "   \"Draw by fifty moves rule\": 25",
+                "   \"Draw by insufficient mating material\": 47",
+                "   \"Draw by stalemate\": 8",
+                "   \"Loss: White mates\": 98",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 92",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_230_vs_epoch_240": {
+        "engine_a": "epoch_230",
+        "engine_b": "epoch_240",
+        "match_metrics": {
+            "elo_diff": -6.9,
+            "error_margin": 23.8,
+            "wins": 94,
+            "losses": 102,
+            "draws": 204,
+            "los_percent": 28.4,
+            "draw_ratio_percent": 51.0,
+            "raw_output": [
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 3",
+                "   \"Loss: White mates\": 99",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 93",
+                "Player: 240",
+                "   \"Draw by 3-fold repetition\": 130",
+                "   \"Draw by fifty moves rule\": 23",
+                "   \"Draw by insufficient mating material\": 41",
+                "   \"Draw by stalemate\": 10",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 93",
+                "   \"Win: Black mates\": 3",
+                "   \"Win: White mates\": 99",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_240_vs_epoch_250": {
+        "engine_a": "epoch_240",
+        "engine_b": "epoch_250",
+        "match_metrics": {
+            "elo_diff": 12.2,
+            "error_margin": 24.4,
+            "wins": 110,
+            "losses": 96,
+            "draws": 194,
+            "los_percent": 83.5,
+            "draw_ratio_percent": 48.5,
+            "raw_output": [
+                "   \"Draw by stalemate\": 17",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 94",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 108",
+                "Player: 250",
+                "   \"Draw by 3-fold repetition\": 120",
+                "   \"Draw by fifty moves rule\": 18",
+                "   \"Draw by insufficient mating material\": 39",
+                "   \"Draw by stalemate\": 17",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 108",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 94",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_250_vs_epoch_260": {
+        "engine_a": "epoch_250",
+        "engine_b": "epoch_260",
+        "match_metrics": {
+            "elo_diff": 9.6,
+            "error_margin": 26.1,
+            "wins": 123,
+            "losses": 112,
+            "draws": 165,
+            "los_percent": 76.3,
+            "draw_ratio_percent": 41.3,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 28",
+                "   \"Draw by insufficient mating material\": 21",
+                "   \"Draw by stalemate\": 14",
+                "   \"Loss: White mates\": 112",
+                "   \"Win: Black mates\": 4",
+                "   \"Win: White mates\": 119",
+                "Player: 260",
+                "   \"Draw by 3-fold repetition\": 102",
+                "   \"Draw by fifty moves rule\": 28",
+                "   \"Draw by insufficient mating material\": 21",
+                "   \"Draw by stalemate\": 14",
+                "   \"Loss: Black mates\": 4",
+                "   \"Loss: White mates\": 119",
+                "   \"Win: White mates\": 112",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_260_vs_epoch_270": {
+        "engine_a": "epoch_260",
+        "engine_b": "epoch_270",
+        "match_metrics": {
+            "elo_diff": 9.6,
+            "error_margin": 25.1,
+            "wins": 114,
+            "losses": 103,
+            "draws": 183,
+            "los_percent": 77.2,
+            "draw_ratio_percent": 45.8,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 25",
+                "   \"Draw by insufficient mating material\": 42",
+                "   \"Draw by stalemate\": 11",
+                "   \"Loss: White mates\": 103",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 113",
+                "Player: 270",
+                "   \"Draw by 3-fold repetition\": 105",
+                "   \"Draw by fifty moves rule\": 25",
+                "   \"Draw by insufficient mating material\": 42",
+                "   \"Draw by stalemate\": 11",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 113",
+                "   \"Win: White mates\": 103",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_270_vs_epoch_280": {
+        "engine_a": "epoch_270",
+        "engine_b": "epoch_280",
+        "match_metrics": {
+            "elo_diff": 11.3,
+            "error_margin": 25.4,
+            "wins": 118,
+            "losses": 105,
+            "draws": 177,
+            "los_percent": 80.8,
+            "draw_ratio_percent": 44.3,
+            "raw_output": [
+                "   \"Draw by stalemate\": 6",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 104",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 116",
+                "Player: 280",
+                "   \"Draw by 3-fold repetition\": 122",
+                "   \"Draw by fifty moves rule\": 26",
+                "   \"Draw by insufficient mating material\": 23",
+                "   \"Draw by stalemate\": 6",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 116",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 104",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_280_vs_epoch_290": {
+        "engine_a": "epoch_280",
+        "engine_b": "epoch_290",
+        "match_metrics": {
+            "elo_diff": 7.8,
+            "error_margin": 24.6,
+            "wins": 109,
+            "losses": 100,
+            "draws": 191,
+            "los_percent": 73.3,
+            "draw_ratio_percent": 47.8,
+            "raw_output": [
+                "   \"Draw by stalemate\": 13",
+                "   \"Loss: Black mates\": 1",
+                "   \"Loss: White mates\": 99",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 107",
+                "Player: 290",
+                "   \"Draw by 3-fold repetition\": 120",
+                "   \"Draw by fifty moves rule\": 24",
+                "   \"Draw by insufficient mating material\": 34",
+                "   \"Draw by stalemate\": 13",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 107",
+                "   \"Win: Black mates\": 1",
+                "   \"Win: White mates\": 99",
+                "Finished match"
+            ]
+        }
+    },
+    "epoch_290_vs_epoch_300": {
+        "engine_a": "epoch_290",
+        "engine_b": "epoch_300",
+        "match_metrics": {
+            "elo_diff": -14.8,
+            "error_margin": 25.9,
+            "wins": 107,
+            "losses": 124,
+            "draws": 169,
+            "los_percent": 13.2,
+            "draw_ratio_percent": 42.3,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 21",
+                "   \"Draw by insufficient mating material\": 28",
+                "   \"Draw by stalemate\": 12",
+                "   \"Loss: Black mates\": 2",
+                "   \"Loss: White mates\": 122",
+                "   \"Win: White mates\": 107",
+                "Player: 300",
+                "   \"Draw by 3-fold repetition\": 108",
+                "   \"Draw by fifty moves rule\": 21",
+                "   \"Draw by insufficient mating material\": 28",
+                "   \"Draw by stalemate\": 12",
+                "   \"Loss: White mates\": 107",
+                "   \"Win: Black mates\": 2",
+                "   \"Win: White mates\": 122",
+                "Finished match"
+            ]
+        }
+    }
+}

@@ -21,7 +21,11 @@ Podstawowym pomysłem było rozwinięcie mojej pracy inżynierskiej poprzez wymi
 
 Następna iteracha polegała na douczaniu modelu grami pobranymi z publicznych baz danych w momencie gdy gracz przekroczy pewien procent ostatnio wygranych partii.
 
-Aby sprawdzić czy taka implementacja byłaby poprawnie działająca, przeprowadzam aktualny eksperyment sprawdzający jakość modelu na każdym etapie uczenia.
+Aby sprawdzić czy taka implementacja byłaby poprawnie działająca, przeprowadzam aktualny eksperyment sprawdzający zachowanie modelu podczas uczenia na zwiększających się jakościowo danych.
+
+## Próby
+
+Początkowo próbowałem użyć LeelaChessZero, natomiast przez spore problemy z uruchomieniem związane ze słabą dokumentacją poddałem się, i zmieniłem użyty silnik na Stockfish NNUE.
 
 ## Dane wejściowe
 
@@ -89,18 +93,20 @@ i uruchamiamy
 
 podajemy folder z danymi: `../data`
 
+następnym razem wchodzimy do już istniejącego kontenera
+
 ### Rozpoczęcie nauki silnika (w kontenerze)
 
 ```bash
 python train.py \
-    /data/input/binpack/train/clean_1200_under_2mil.binpack \
-    --validation-datasets /data/input/binpack/test/clean_1200_under_200k_test.binpack \
+    /data/input/binpack/clean_1200_under_2mil.binpack \
+    --validation-datasets /data/input/binpack/clean_1200_under_200k_test.binpack \
     --default-root-dir /data/trained_nets/ \
     --gpus 0 \
     --threads 4 \
     --batch-size 16384 \
     --lambda 0.3 \
-    --max-epochs 50 \
+    --max-epochs 100 \
     --features "HalfKAv2_hm^" \
     --network-save-period 10
 ```
