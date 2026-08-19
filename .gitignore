@@ -20,4 +20,7 @@ pgn_splitter/target
 cutechess*
 Cute_Chess-1.4.0-x86_64.AppImage
 stockfish*
+Stockfish*
 UHO*
+ordo
+__pycache__

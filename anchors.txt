@@ -1,0 +1,5 @@
+"Anchor_SF_1000",1000
+"Anchor_SF_1200",1200
+"Anchor_SF_1400",1400
+"Anchor_SF_1600",1600
+"Anchor_SF_1800",1800

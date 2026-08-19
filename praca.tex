@@ -41,9 +41,28 @@
 \tableofcontents
 
 \chapter*{Streszczenie}
-Niniejsza praca bada wpływ uczenia progresywnego (\textit{curriculum learning}) na proces trenowania sieci neuronowych w silnikach szachowych. Głównym celem jest sprawdzenie, czy uczenie modelu na danych o stopniowo rosnącym poziomie trudności (Elo) wpływa na szybkość zbieżności, siłę gry oraz styl modelu końcowego w porównaniu do klasycznego podejścia.
+
+Niniejsza praca bada wpływ uczenia progresywnego (\textit{curriculum learning}) na proces trenowania głębokich funkcji ewaluacji w silnikach szachowych opartych na architekturze NNUE (\textit{Efficiently Updatable Neural Network}). Głównym celem badawczym było zweryfikowanie hipotezy, czy sekwencyjne douczanie modelu na partiach pochodzących z coraz wyższych przedziałów rankingowych (Elo) pozytywnie wpływa na zbieżność procesu optymalizacji, dynamikę funkcji straty oraz końcową siłę gry w porównaniu do podejścia klasycznego (trening na zbiorze o wymieszanym rozkładzie rankingowym).
+
+Projekt opiera się na koncepcji rozwijanej od etapu pracy inżynierskiej, w ramach której dążono do stworzenia adaptacyjnego asystenta treningowego, dostosowującego poziom trudności do umiejętności gracza w celu wywołania tzw. stanu optymalnego zaangażowania (\textit{flow}). W toku wstępnych eksperymentów odrzucono podejście oparte na architekturze Leela Chess Zero ze względu na ograniczenia infrastrukturalno-dokumentacyjne, decydując się na środowisko \texttt{nnue-pytorch} oraz zmodyfikowany silnik Stockfish (z funkcją cech \textit{HalfKAv2\_hm\string^}).
+
+Zbiorami danych wejściowych była oficjalna baza danych serwisu Lichess z marca 2026 roku (ponad 90 milionów pojedynków). Przy użyciu autorskiego potoku przetwarzania (skrypty w języku Rust oraz narzędzie \texttt{pgn-extract}) surowe partie PGN przefiltrowano pod kątem minimalnej długości wariantów (\texttt{--minply 40}), poprawności zakończeń (\texttt{--nobadresults}) oraz wyeliminowania asymetrii rankingowej. Przefiltrowane dane podzielono na rozłączne koszyki Elo (po 2 miliony gier w każdym), a następnie przetransformowano je do binarnego formatu \texttt{.binpack}.
+
+W celach weryfikacyjnych przeprowadzono eksperymenty porównawcze obejmujące trzy próby:
+\begin{enumerate}
+    \item \textbf{Badawczą (progresywną):} uczenie realizowane kolejno od najniższych do najwyższych koszyków Elo.
+    \item \textbf{Kontrolną:} uczenie na losowo wymieszanym zbiorze danych z pełnego zakresu Elo.
+    \item \textbf{Odwróconą (\textit{reverse curriculum}):} uczenie rozpoczynane od partii o wysokim Elo, a kończone na partiach graczy początkujących.
+\end{enumerate}
+
+Analiza statystyczna krzywych funkcji straty (\textit{loss}) wykazała istotne różnice w dynamice uczenia pomiędzy modelem kontrolnym a próbami sekwencyjnymi. W próbie badawczej odnotowano aż 2,5-krotnie wyższe całkowite odchylenie standardowe błędu ($\text{Total Loss Std} = 0{,}006142$ vs $0{,}002484$) oraz o 81\% wyższą zmienność szumu względem trendu ($\text{Noise Volatility} = 0{,}002060$ vs $0{,}001137$). Sytuację tę wywołały gwałtowne, punktowe skoki funkcji straty w momentach przełączania zasobników PGN.
+
+Najważniejszym odkryciem pracy jest symetria zachowania sieci w próbie progresywnej i odwróconej. Wskaźniki całkowitej zmienności błędu oraz liczby nagłych skoków ($>3\sigma$) okazały się niemal identyczne w obu tych wariantach (różnice poniżej 4\%). Wynik ten jednoznacznie obala hipotezę, jakoby partie graczy o wyższym rankingu Elo stanowiły dla sieci problem o „wyższym stopniu trudności optymalizacyjnej”. Obserwowane destabilizacje są wyłącznie konsekwencją dyskontynuacji rozkładu danych uczących (\textit{Co-Domain Shift} / \textit{Distribution Shift}). 
+
+Praca formułuje powiązane wnioski praktyczne dla projektowania systemów uczących się na bazach gier ludzkich: sekwencyjna podmiana zbiorów danych bez zastosowania mechanizmów ciągłego powtarzania danych (\textit{Data Replay}) prowadzi do zaburzeń procesu optymalizacji wag, niezależnie od kierunku zmian jakościowych w danych.
 
 \chapter{Wstęp}
+
 \section{Motywacja}
 % Na podstawie README_AI.md: Rozwinięcie pracy inżynierskiej, asystent uczący się z graczem.
 
@@ -60,27 +79,109 @@ Pierwszym celem jaki chciałem osiągnąć było stworzenie partnera do trenowan
 \end{itemize}
 
 \chapter{Przegląd technologii}
+
 \section{Silnik Stockfish i architektura NNUE}
 % Opis Stockfish NNUE, nnue-pytorch.
+Stockfish to jeden z najsilniejszych na świecie, otwartoźródłowych silników szachowych, rozwijany społecznościowo od 2008 roku. Tradycyjnie opierał się na algorytmie przeszukiwania drzewa wariantów Alpha-Beta uzupełnionym o rozbudowane, ręcznie projektowane funkcje ewaluacji (Hand-Crafted Evaluation - HCE), które oceniały pozycję na podstawie tysięcy reguł czysto taktycznych i pozycyjnych.
+Przełomem w rozwoju silnika było wprowadzenie w 2020 roku architektury NNUE (Efficiently Updatable Neural Network), pierwotnie zaprojektowanej przez Yu Nasu dla shōgi. NNUE to płytka, wolna od zwijania (fully connected) sieć neuronowa zintegrowana bezpośrednio z silnikiem przeszukującym, która zastąpiła tradycyjną funkcję HCE. Główną zaletą tej architektury jest jej dopasowanie do specyfiki gry w szachy - przy wykonywaniu pojedynczego ruchu na planszy większość cech pozycji nie ulega zmianie, co pozwala na przyrostowe (inkrementalne) aktualizowanie wartości aktywacji pierwszej warstwy sieci zamiast przeliczania całej pozycji od zera. W praktyce sieć neuronowa NNUE działa bezpośrednio na procesorze (CPU) z wykorzystaniem rozkazów SIMD (np. AVX2, AVX-512), osiągając przepustowość milionów ewaluacji na sekundę. W wersjach takich jak \textit{HalfKAv2\_hm\string^}) stan planszy reprezentowany jest jako rzadki wektor cech opisujący relacje pomiędzy pozycją króla a położeniem pozostałych bierek, co pozwala modelowi na precyzyjną ocenę dynamiki pozycji przy zachowaniu wyjątkowo wysokiej wydajności obliczeniowej.
+
 \section{Baza danych Lichess}
+Lichess.org jest jedną z największych na świecie otwartych platform szachowych, regularnie udostępniającą publicznie kompletne, zaanonimowane bazy danych partii rozegranych przez użytkowników serwisu. Zbiór ten stanowi idealne źródło danych treningowych na potrzeby eksperymentów z uczeniem maszynowym ze względu na swoją reprezentatywność, wolumen oraz szczegółowość metadanych.
+Każda partia w bazie zapisana jest w formacie PGN (Portable Game Notation) i zawiera m.in. dokładne rankingi Elo obu graczy, kontrolę czasu (od partii błyskawicznych po klasyczne) oraz uzgodniony wynik. Różnorodność poziomów umiejętności graczy - od początkujących (Elo poniżej 1000) po arcymistrzów (Elo powyżej 2700) - jest kluczowym elementem z punktu widzenia koncepcji uczenia progresywnego (curriculum learning). Umożliwia to precyzyjne selekcjonowanie partii i podział danych na spójne podbiory reprezentujące kolejne etapy rozwoju szachowego, co stanowi fundament metodologiczny niniejszej pracy.
+
 \section{Narzędzia pomocnicze}
 % pgn-extract, cutechess, Ordo.
+Proces przetwarzania danych, przeprowadzenia treningu oraz automatyzacji turniejów ewaluacyjnych wymagał wykorzystania wyspecjalizowanego zestawu narzędzi open-source:
+\begin{itemize}
+    \item \textbf{pgn-extract} zaawansowane narzędzie wiersza poleceń przeznaczone do przeszukiwania, filtrowania i parsowania plików PGN. W ramach przeprowadzonego eksperymentu posłużyło do selekcji partii według kryteriów takich jak minimalna liczba posunięć (filtracja zagrań zbyt krótkich lub porzuconych), poziom Elo graczy oraz odrzucenie partii zakończonych nietypowo (np. z powodu problemów technicznych z połączeniem).
+    \item \textbf{Cutechess} elastyczny interfejs i narzędzie wiersza poleceń służące do automatycznego przeprowadzania turniejów pomiędzy silnikami szachowymi operującymi na protokole UCI (Universal Chess Interface). Pozwoliło na obiektywną weryfikację siły gry poszczególnych iteracji modelu w kontrolowanych warunkach (z jednakową kontrolą czasu i zdefiniowanymi pozycjami otwarć).
+    \item \textbf{Ordo} narzędzie statystyczne dedykowane do wyznaczania rankingów Elo na podstawie wyników bezpośrednich pojedynków pomiędzy silnikami. Pozwala na precyzyjne obliczenie siły gry modelu wraz z przedziałami ufności na podstawie rozegranych turniejów w Cutechess.
+\end{itemize}
 
 \chapter{Przygotowanie danych}
+
 \section{Pozyskiwanie i filtrowanie danych (PGN)}
 % Opis użycia pgn-extract, parametry minply, nobadresults.
+Proces przygotowania zbioru treningowego rozpoczęto od pobrania surowych archiwów PGN z otwartego repozytorium bazy danych Lichess. Ze względu na fakt, że surowa baza zawiera miliony partii o bardzo zróżnicowanej jakości, konieczne było przeprowadzenie rygorystycznej filtracji w celu odrzucenia rekordów niepełnych, błędnych lub zaburzających proces uczenia.
+Do wstępnej obróbki plików PGN wykorzystano program pgn-extract. Zastosowano następujące reguły i parametry filtrowania:
+\begin{itemize}
+    \item \textbf{Minimalna długość partii (--minply / -s)} Odrzucono partie krótsze niż określony próg posunięć (np. poniżej 10 półruchów). Pozwoliło to wyeliminować szybkie remisy polubowne, natychmiastowe poddania w debiucie oraz partie zerwane na bardzo wczesnym etapie.
+    \item \textbf{textbfOdrzucenie nietypowych zakończeń (--nobadresults)} Przefiltrowano partie zakończone z przyczyn technicznych (porzucenie połączenia, awaria serwera, błędy protokołu), pozostawiając jedynie pojedynki rozstrzygnięte w sposób naturalny (mat, poddanie, pat, przekroczenie czasu lub wyczerpanie materiału).
+    \item \textbf{Jednolity poziom graczy} Odrzucono partie z dużą dysproporcją rankingową pomiędzy zawodnikami, aby uniknąć sytuacji, w której wysoce asymetryczna jakość zagrań zaburzałaby ocenę cech pozycji.
+\end{itemize}
+
 \section{Podział na koszyki Elo}
 % Algorytm podziału gier na przedziały rankingowe.
+
+
 \section{Transformacja do formatu binpack}
 % pgn -> plain -> binpack.
+Prawidłowy i wydajny trening architektury NNUE za pomocą biblioteki nnue-pytorch wymaga przekształcenia tekstu PGN do dedykowanego, skompresowanego formatu binarnego .binpack. Proces ten realizowany jest w dwuetapowym potoku (pipeline):
+
+Konwersja PGN do formatu pośredniego (plain text): Zapis PGN parsowany jest do uproszczonej postaci tekstowej, w której każda linia reprezentuje stan planszy (w notacji FEN) połączony z wykonanym ruchem, wynikiem partii oraz ewentualną oceną ewaluacyjną silnika.
+
+Kompresja do formatu .binpack: Za pomocą wbudowanych narzędzi konwertujących nnue-pytorch, plik pośredni ulega binarnej kompresji. Format .binpack rezerwuje niewielką liczbę bitów na reprezentację roszad, praw do bicia w przelocie oraz rzadkich wektorów pozycji bierek.
+Transformacja ta redukuje rozmiar danych na dysku o ponad 80\% w porównaniu do surowego PGN oraz drastycznie zwiększa przepustowość odczytu (I/O) podczas treningu na GPU, eliminując wąskie gardło CPU podczas rozpakowywania rekordu partii w czasie rzeczywistym.
 
 \chapter{Proces uczenia}
+
 \section{Architektura eksperymentu}
-% Porównanie modelu badawczego z kontrolnym.
+
+Eksperyment badawczy zaprojektowano w celu dokładnego porównania dynamiki uczenia oraz końcowych właściwości modelu poddawanego uczeniu progresywnemu (\textit{curriculum learning}) względem podejścia klasycznego (kontrolnego) oraz wariantu odwróconego (\textit{reverse curriculum}). Przepływ danych oraz poszczególne etapy przetwarzania i ewaluacji przedstawiono na schemacie (Rysunek~\ref{fig:workflow}).
+
+\begin{figure}[htbp]
+    \centering
+    % Miejsce na wygenerowany wykres z diagramu Draw.io
+    \caption{Schemat przepływu danych oraz architektury eksperymentu badawczego.}
+    \label{fig:workflow}
+\end{figure}
+
+Cały proces eksperymentalny składa się z następujących kroków:
+\begin{enumerate}
+    \item \textbf{Przygotowanie i przefiltrowanie bazy danych PGN:} Surowe partie pobrane z serwisu Lichess poddawane są czyszczeniu przy użyciu programu \texttt{pgn-extract} w celu odrzucenia zagrań zbyt krótkich oraz błędnych wyników.
+    \item \textbf{Podział na koszyki Elo oraz transformacja danych:} W wariancie badawczym przefiltrowane partie rozdzielane są na osobne zbiorniki reprezentujące rosnące przedziały rankingowe (po 2~miliony partii na koszyk). W przypadku próby kontrolnej partie z różnych przedziałów są losowo wymieszane w ramach jednego zbioru. Następnie dane są ewaluowane i konwertowane do binarnego formatu \texttt{.binpack}.
+    \item \textbf{Iteracyjny trening sieci neuronowej:} Uczenie odbywa się przy użyciu biblioteki \texttt{nnue-pytorch}. W wariancie badawczym model po osiągnięciu założonej liczby epok (100 epok na koszyk) przechodzi do kolejnego zbiornika PGN (pętla \textit{Zmiana koszyka}), kontynuując naukę z punktu kontrolnego (\textit{checkpoint}) poprzedniego etapu.
+    \item \textbf{Obliczenie metryk pośrednich i ewaluacja:} Po zakończeniu określonych epok następuje serializacja wag sieci do plików \texttt{.nnue}, budowa dedykowanych wersji silnika Stockfish oraz automatyczne przeprowadzanie turniejów testowych (za pomocą narzędzi \texttt{cutechess} i \texttt{Ordo}).
+    \item \textbf{Eksploracja danych i wnioskowanie:} Zgromadzone krzywe funkcji straty (\textit{loss curves}) oraz metryki rankingowe poddawane są analizie statystycznej w celu weryfikacji postawionych hipotez.
+\end{enumerate}
+
 \section{Parametry treningu}
-% Batch size, lambda (0.3), learning rate, features (HalfKAv2_hm^).
+
+Trening sieci realizowano z wykorzystaniem frameworka \texttt{nnue-pytorch} (opartego na \texttt{PyTorch Lightning}). Zastosowano spójny zestaw hiperparametrów dla wszystkich analizowanych wariantów eksperymentalnych:
+
+\begin{itemize}
+    \item \textbf{Reprezentacja cech (\textit{Feature Set}):} Zastosowano układ \textit{HalfKAv2\_hm\string^}, będący standardem w nowoczesnych wersjach silnika Stockfish. Koduje on względne pozycje figur na planszy w relacji do położenia obu królów z uwzględnieniem symetrii planszy.
+    \item \textbf{Wielkość wsadu (\textit{Batch Size}):} Trening prowadzono z rozmiarem wsadu równym $16\,384$ pozycji. Wybór tak dużego wsadu zapewnia wysoką stabilność estymacji gradientu na kartach graficznych o dużej pamięci VRAM oraz optymalne wykorzystanie mocy obliczeniowej GPU.
+    \item \textbf{Współczynnik straty (\textit{Lambda}):} Parametr $\lambda = 0{,}3$ reguluje wagę pomiędzy oceną wartości pozycji (\textit{eval}) wynikającej ze statycznej oceny silnika a rzeczywistym wynikiem partii (\textit{game outcome}).
+    \item \textbf{Liczba epok i harmonogram:} Dla każdego koszyka rankingowego zaplanowano po 100 epok uczenia (co sumarycznie dla 6 koszyków przekłada się na 600 epok i około 50--80 godzin ciągłych obliczeń). Zapis stanu sieci (\textit{checkpoint}) wykonywany był co 10 epok (\texttt{--network-save-period 10}).
+\end{itemize}
+
+Przykładowe uruchomienie procesu uczenia wewnątrz środowiska przedstawia poniższy listing:
+
+\begin{lstlisting}[language=bash, caption=Polecenie uruchamiające proces uczenia na pierwszym koszyku Elo]
+python train.py \
+    /data/input/binpack/clean_1200_under_2mil.binpack \
+    --validation-datasets /data/input/binpack/clean_1200_under_200k.binpack \
+    --default-root-dir /data/trained_nets/ \
+    --gpus 0 \
+    --threads 4 \
+    --batch-size 16384 \
+    --lambda 0.3 \
+    --max-epochs 100 \
+    --features "HalfKAv2_hm^" \
+    --network-save-period 10
+\end{lstlisting}
+
 \section{Infrastruktura obliczeniowa}
-% Środowisko Docker, GPU RX 6800xt.
+
+Ze względu na skomplikowane zależności bibliotek (\texttt{PyTorch}, \texttt{CUDA}/\texttt{ROCm}, \texttt{PyTorch Lightning}) oraz wymóg odizolowania środowiska uruchomieniowego, cały proces uczenia oraz serializacji modeli przeprowadzono wewnątrz kontenera \textbf{Docker}.
+
+Środowisko sprzętowo-programowe wykorzystane w eksperymencie obejmowało:
+\begin{itemize}
+    \item \textbf{Jednostkę obliczeniową (GPU):} Karta graficzna AMD Radeon RX 6800 XT z 16 GB pamięci VRAM, wykorzystująca przyspieszenie sprzętowe w środowisku sterowników ROCm (przekazywanie urządzeń \texttt{/dev/kfd} oraz \texttt{/dev/dri} do kontenera).
+    \item \textbf{Konfigurację kontenera:} Kontener uruchamiano z prawami dostępu do grup systemowych \texttt{render} oraz \texttt{video}, z nieskończonym limitem blokowania pamięci (\texttt{--ulimit memlock=-1}) oraz zwiększonym rozmiarem stosu, co wyeliminowało wąskie gardła podczas przesyłania dużych zbiorów \texttt{.binpack} z dysku do pamięci GPU.
+    \item \textbf{Środowisko wykonawcze (Python):} Środowisko wewnątrz kontenera zostało dostosowane pod kątem spójności wersji pakietów (m.in. wymuszenie wersji \texttt{numpy < 2.5} oraz odpowiednich wersji \texttt{torch} kompatybilnych z architekturą sterowników).
+\end{itemize}
 
 \chapter{Ewaluacja i wyniki}
 \section{Metryki oceny}
