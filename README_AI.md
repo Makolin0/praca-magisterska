@@ -14,8 +14,9 @@ Curriculum Learning
 - [stockfish nnue](https://github.com/official-stockfish/nnue-pytorch) - projekt pozwalający na uczenie własnych silników szachowych na architekturze NNUE
 - [lichess database](https://database.lichess.org) - baza danych gier szachowych z której pobrałem dane uczące
 - [stockfish](https://github.com/official-stockfish/Stockfish) - Główne repozytorium Stockfisha, głównie użyte do narzędzi oceniających ruchy dla danych uczących
-- [cutechess](https://github.com/cutechess/cutechess) - ocena elo stworzonych silników
+- [cutechess](https://github.com/cutechess/cutechess) - platforma do testowania silników szachowych
 - [Książka otwarć](https://github.com/official-stockfish/books/blob/master/UHO_4060_v4.epd.zip)
+- [ordo](https://github.com/ballic/ordo) - ocena elo stworzonych silników na podstawie rozegranych partii
 
 ## Droga do obecnego eksperymentu
 
@@ -133,16 +134,7 @@ Kontynuacja nauki:
 python serialize.py /data/trained_nets/lightning_logs/version_1/checkpoints/epoch=9-step=61040.ckpt /data/nnue/1200_under/epoch_10.nnue --features="HalfKAv2_hm^"
 ```
 
-nowa wersja do przetestowania
-
-```bash
-python serialize.py \
-        --features "HalfKAv2_hm" \
-        /data/trained_nets/test/lightning_logs/version_0/checkpoints/last.ckpt \
-        custom_net.nnue
-```
-
-### Stworzenie pełnego silnika na podstawie modelu
+### Stworzenie pełnego silnika na podstawie modelu (deprecated)
 
 w katalogu stockfish-source/src
 
@@ -151,7 +143,7 @@ make clean
 make -j$(nproc) profile-build COMP=gcc ARCH=x86-64-bmi2 EVALFILE=/home/adamz/Documents/praca-magisterska/data/nnue/1200_under/epoch_10.nnue
 ```
 
-### Porównanie modeli ze sobą
+### Porównanie modeli ze sobą (deprecated)
 
 w środku pliku `evaluate_nets.py` podmienić odpowiednie ścieżki i wykonać
 

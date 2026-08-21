@@ -3,7 +3,7 @@ import subprocess
 
 # Ścieżki bazowe
 BASE_DIR = os.path.expanduser("/home/adamz/Documents/praca-magisterska")
-WEIGHTS_DIR = os.path.join(BASE_DIR, "data/nnue/research")  # Tutaj leżą pliki .nnue
+WEIGHTS_DIR = os.path.join(BASE_DIR, "nnue/test")  # Tutaj leżą pliki .nnue
 STOCKFISH_EXEC = os.path.join(BASE_DIR, "stockfish_anchor")     # Główny binarek Stockfisha
 BOOK_PATH = os.path.join(BASE_DIR, "UHO_4060_v4.epd")
 PGN_OUT = os.path.join(WEIGHTS_DIR, "tournament_results.pgn")
@@ -13,7 +13,10 @@ ANCHOR_ELOS = [1350, 1500, 1650, 1800]
 
 cmd = [CUTECHESS_EXEC]
 
-# 1. Autorskie epoki - wczytywanie wag .nnue przez opcję UCI EvalFile
+PYTHON_EXEC = os.path.join(BASE_DIR, ".venv/bin/python3")
+UCI_ENGINE_SCRIPT = os.path.join(BASE_DIR, "uci_engine.py")
+
+# 1. Autorskie epoki - wczytywanie wag .nnue przez uci_engine.py
 nnue_files = sorted([f for f in os.listdir(WEIGHTS_DIR) if f.endswith(".nnue") or "epoch" in f])
 
 for weight_file in nnue_files:
@@ -26,8 +29,10 @@ for weight_file in nnue_files:
         
         cmd.extend([
             "-engine", f"name={engine_name}",
-            f"cmd={STOCKFISH_EXEC}",
-            f"option.EvalFileSmall={weight_path}"  # Wskazanie konkretnego pliku sieci dla danej epoki
+            f"cmd={PYTHON_EXEC}",
+            f"arg={UCI_ENGINE_SCRIPT}",
+            "arg=--net",
+            f"arg={weight_path}"
         ])
 
 # 2. Silniki kotwiczące z poprawnie rozdzielonymi opcjami UCI

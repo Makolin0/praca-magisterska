@@ -4,7 +4,7 @@ import threading
 
 ENGINE_CMD = [
     '/home/adamz/Documents/praca-magisterska/.venv/bin/python3',
-    '/home/adamz/Documents/praca-magisterska/uci_engine.py',
+    '/home/adamz/Documents/praca-magisterska/uci_engine_optimized.py',
     '--net', '/home/adamz/Documents/praca-magisterska/nnue/control/epoch_300.nnue',
 ]
 

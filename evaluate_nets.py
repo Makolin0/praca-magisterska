@@ -29,11 +29,11 @@ os.makedirs(COMPILED_BIN_DIR, exist_ok=True)
 
 
 # Paths to your core directories
-STOCKFISH_SRC_DIR = "/home/adamz/Documents/praca-magisterska/stockfish-source/src"  # Must point to Stockfish's 'src' directory
+PYTHON_EXEC = "/home/adamz/Documents/praca-magisterska/.venv/bin/python3"
+UCI_ENGINE_SCRIPT = "/home/adamz/Documents/praca-magisterska/uci_engine.py"
 CUTECHESS_CLI_PATH = "/home/adamz/Documents/praca-magisterska/cutechess-cli"          # Change to absolute path if not in system PATH
 
 # Hardware / Compilation settings
-CPU_ARCH = "x86-64-bmi2"                      # e.g., x86-64-bmi2, x86-64-avx2, apple-silicon
 CONCURRENCY = 10                               # Number of concurrent games cutechess should run
 
 # Cutechess match settings
@@ -68,7 +68,7 @@ def run_adjacent_comparison(compiled_nets, sorted_net_files):
     sorted_names = [f.stem for f in sorted_net_files if f.stem in compiled_nets]
     
     if len(sorted_names) < 2:
-        print("Not enough successfully compiled nets to perform adjacent comparison.")
+        print("Not enough networks to perform adjacent comparison.")
         return results_report
 
     print(f"Chaining adjacent matches across {len(sorted_names)} networks...")
@@ -130,69 +130,14 @@ def run_round_robin(compiled_nets):
 
     return results_report
 
-def compile_all_nets(net_files):
-    """Compile all networks once and return {name: binary_path}."""
-    compiled = {}
-
+def get_all_nets(net_files):
+    """Return {name: net_path}."""
+    nets = {}
     for net_file in net_files:
         net_name = net_file.stem
-        binary = compile_stockfish(str(net_file), f"sf_{net_name}")
+        nets[net_name] = str(os.path.abspath(net_file))
+    return nets
 
-        if binary:
-            compiled[net_name] = binary
-        else:
-            print(f"Skipping {net_name} due to compilation error.")
-
-    return compiled
-
-def compile_stockfish(net_path, binary_name):
-    """
-    Compiles Stockfish with a given NNUE, but uses caching:
-    if binary already exists in COMPILED_BIN_DIR -> reuse it instantly.
-    """
-    abs_net_path = os.path.abspath(net_path)
-    cached_binary = os.path.join(COMPILED_BIN_DIR, binary_name)
-
-    if os.path.exists(cached_binary):
-        print(f"[CACHE HIT] Found existing compiled binary: {binary_name}")
-        return cached_binary
-
-    print(f"[COMPILING] {os.path.basename(net_path)} -> {binary_name} (This may take a while...)")
-
-    try:
-        subprocess.run(
-            ["make", "clean"],
-            cwd=STOCKFISH_SRC_DIR,
-            check=True,
-            stdout=subprocess.DEVNULL
-        )
-
-        compile_cmd = [
-            "make",
-            f"-j{os.cpu_count()}",
-            "profile-build",
-            "COMP=gcc",
-            f"ARCH={CPU_ARCH}",
-            f"EVALFILE={abs_net_path}"
-        ]
-
-        subprocess.run(
-            compile_cmd,
-            cwd=STOCKFISH_SRC_DIR,
-            check=True,
-            stdout=subprocess.DEVNULL
-        )
-
-        os.rename(
-            os.path.join(STOCKFISH_SRC_DIR, "stockfish"),
-            cached_binary
-        )
-
-        return cached_binary
-
-    except subprocess.CalledProcessError as e:
-        print(f"Compilation failed for {binary_name}: {e}")
-        return None
     
 def parse_cutechess_output(output_text):
     """Extracts final Elo diff, error margin, and game statistics using regex."""
@@ -244,8 +189,8 @@ def run_tournament(engine_a, engine_b, name_a, name_b):
 
     cmd = [
         CUTECHESS_CLI_PATH,
-        "-engine", f"cmd={engine_a}", f"name={display_name_a}",
-        "-engine", f"cmd={engine_b}", f"name={display_name_b}",
+        "-engine", f"cmd={PYTHON_EXEC}", f"arg={UCI_ENGINE_SCRIPT}", "arg=--net", f"arg={engine_a}", f"name={display_name_a}",
+        "-engine", f"cmd={PYTHON_EXEC}", f"arg={UCI_ENGINE_SCRIPT}", "arg=--net", f"arg={engine_b}", f"name={display_name_b}",
         "-each", "proto=uci", f"tc={TIME_CONTROL}", "option.Hash=16", "option.Threads=1",
         "-tournament", "gauntlet",
         "-games", str(GAME_COUNT),
@@ -268,38 +213,33 @@ def main():
 
     if COMPARE_MODE == "adjacent":
         print("Running ADJACENT chain comparison mode...")
-        compiled_nets = compile_all_nets(new_net_files)
+        compiled_nets = get_all_nets(new_net_files)
         results_report = run_adjacent_comparison(compiled_nets, new_net_files)
 
     elif COMPARE_MODE == "round_robin":
         print("Running ROUND-ROBIN mode...")
-        compiled_nets = compile_all_nets(new_net_files)
+        compiled_nets = get_all_nets(new_net_files)
         results_report = run_round_robin(compiled_nets)
 
     else:
         print("Running BASELINE comparison mode...")
 
-        # Pre-compile baselines
-        compiled_baselines = []
+        # Baselines
+        baselines = []
         for idx, base in enumerate(BASELINE_NETS):
-            bin_name = f"sf_base_{idx}_{base['name']}"
-            bin_path = compile_stockfish(base["path"], bin_name)
-            if bin_path:
-                compiled_baselines.append({
-                    "name": base["name"],
-                    "anchor_elo": base["elo"],
-                    "binary_path": bin_path
-                })
+            baselines.append({
+                "name": base["name"],
+                "anchor_elo": base["elo"],
+                "binary_path": os.path.abspath(base["path"])
+            })
 
         for net_file in new_net_files:
             net_name = net_file.stem
             results_report[net_name] = []
 
-            candidate_binary = compile_stockfish(str(net_file), f"sf_{net_name}")
-            if not candidate_binary:
-                continue
+            candidate_binary = os.path.abspath(net_file)
 
-            for base in compiled_baselines:
+            for base in baselines:
                 match_metrics = run_tournament(
                     candidate_binary,
                     base["binary_path"],
