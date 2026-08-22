@@ -13,15 +13,15 @@ BASE_DIR = os.path.expanduser("/home/adamz/Documents/praca-magisterska")
 # "separate_anchors" -> Each .nnue net runs its own independent tournament against Stockfish anchors
 # "adjacent"         -> Nets play only their immediate neighbour (e.g. epoch 10 vs 20, 20 vs 30)
 # "round_robin"      -> Every .nnue net plays against every other .nnue net
-COMPARE_MODE = "adjacent"  
+COMPARE_MODE = "separate_anchors"  
 
-WEIGHTS_DIR = os.path.join(BASE_DIR, "nnue/temp")  # Tutaj leżą pliki .nnue
+WEIGHTS_DIR = os.path.join(BASE_DIR, "nnue/research")  # Tutaj leżą pliki .nnue
 
 # SPEED OPTIMIZATIONS
 # To make the tournament fast, we reduce the nodes-per-move constraint and total games.
 # 'tc=inf' turns off the absolute clock so Python doesn't lose on time due to startup/overhead.
 # 'nodes=500' restricts exactly how many nodes are searched per move (very fast).
-ROUNDS       = "100"    # Number of rounds (Total games = ROUNDS * 2 for colors)
+ROUNDS       = "50"    # Number of rounds (Total games = ROUNDS * 2 for colors)
 CONCURRENCY  = "8"    # How many games run at the same time
 NODES        = "2000"  # Nodes to analyze per move.
 
@@ -37,7 +37,7 @@ CUTECHESS_EXEC = "./cutechess-cli"
 PYTHON_EXEC = os.path.join(BASE_DIR, ".venv/bin/python3")
 UCI_ENGINE_SCRIPT = os.path.join(BASE_DIR, "uci_engine_optimized.py")
 
-ANCHOR_ELOS = [1350, 1500, 1650, 1800]
+ANCHOR_ELOS = [1350, 1500, 1800]
 
 def natural_sort_key(s):
     return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', str(s))]

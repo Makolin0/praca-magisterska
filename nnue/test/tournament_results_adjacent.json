@@ -1,0 +1,60 @@
+[
+    {
+        "match": "epoch_010_vs_epoch_150",
+        "metrics": {
+            "elo_diff": 27.9,
+            "error_margin": 37.4,
+            "wins": 68,
+            "losses": 52,
+            "draws": 80,
+            "los_percent": 92.8,
+            "draw_ratio_percent": 40.0,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 6",
+                "   \"Draw by insufficient mating material\": 2",
+                "   \"Loss: Black mates\": 23",
+                "   \"Loss: White mates\": 29",
+                "   \"Win: Black mates\": 37",
+                "   \"Win: White mates\": 31",
+                "Player: epoch_150",
+                "   \"Draw by 3-fold repetition\": 72",
+                "   \"Draw by fifty moves rule\": 6",
+                "   \"Draw by insufficient mating material\": 2",
+                "   \"Loss: Black mates\": 37",
+                "   \"Loss: White mates\": 31",
+                "   \"Win: Black mates\": 23",
+                "   \"Win: White mates\": 29",
+                "Finished match"
+            ]
+        }
+    },
+    {
+        "match": "epoch_150_vs_epoch_300",
+        "metrics": {
+            "elo_diff": -109.5,
+            "error_margin": 37.4,
+            "wins": 28,
+            "losses": 89,
+            "draws": 83,
+            "los_percent": 0.0,
+            "draw_ratio_percent": 41.5,
+            "raw_output": [
+                "   \"Draw by fifty moves rule\": 6",
+                "   \"Draw by insufficient mating material\": 5",
+                "   \"Loss: Black mates\": 50",
+                "   \"Loss: White mates\": 39",
+                "   \"Win: Black mates\": 10",
+                "   \"Win: White mates\": 18",
+                "Player: epoch_300",
+                "   \"Draw by 3-fold repetition\": 72",
+                "   \"Draw by fifty moves rule\": 6",
+                "   \"Draw by insufficient mating material\": 5",
+                "   \"Loss: Black mates\": 10",
+                "   \"Loss: White mates\": 18",
+                "   \"Win: Black mates\": 50",
+                "   \"Win: White mates\": 39",
+                "Finished match"
+            ]
+        }
+    }
+]
