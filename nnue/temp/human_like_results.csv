@@ -1,0 +1,11 @@
+Network,Matched_Moves,Total_Moves,Match_Percentage
+epoch_210.nnue,5396,37389,14.43
+epoch_220.nnue,4998,37389,13.37
+epoch_230.nnue,4813,37389,12.87
+epoch_240.nnue,4813,37389,12.87
+epoch_250.nnue,4743,37389,12.69
+epoch_260.nnue,4681,37389,12.52
+epoch_270.nnue,4540,37389,12.14
+epoch_280.nnue,4494,37389,12.02
+epoch_290.nnue,4481,37389,11.98
+epoch_300.nnue,4519,37389,12.09

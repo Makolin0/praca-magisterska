@@ -17,6 +17,17 @@ import time
 import struct
 import argparse
 import chess
+import os
+
+# Prevent numpy from spawning threads. When Cutechess runs 10 games concurrently (20 engine instances),
+# numpy's default multithreading (often equal to physical cores) causes massive CPU contention,
+# slowing execution from seconds to several minutes per move.
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import numpy as np
 
 # ======================================================================
@@ -280,20 +291,48 @@ def evaluate(w: NNUEWeights, board: chess.Board) -> int:
 
 
 # ──────────────────────────────────────────────────────────────────────
-# Alpha-beta search
+# Alpha-beta search & Move Ordering
 # ──────────────────────────────────────────────────────────────────────
 
-def quiesce(w, board, alpha, beta):
+# Global Transposition Table
+TT = {}
+
+def clear_tt():
+    global TT
+    TT.clear()
+
+def move_score(board, move):
+    """Assigns a score to a move for ordering (MVV-LVA)."""
+    if board.is_capture(move):
+        if board.is_en_passant(move):
+            return 105
+        victim = board.piece_at(move.to_square)
+        attacker = board.piece_at(move.from_square)
+        if victim and attacker:
+            return 100 + (victim.piece_type * 10 - attacker.piece_type)
+        return 100
+    if move.promotion:
+        return 90 + move.promotion
+    return 0
+
+def quiesce(w, board, alpha, beta, nodes, nodes_limit):
+    if nodes_limit and nodes[0] >= nodes_limit:
+        return evaluate(w, board)
+        
+    nodes[0] += 1
     stand_pat = evaluate(w, board)
     if stand_pat >= beta:
         return beta
     if alpha < stand_pat:
         alpha = stand_pat
-    for move in board.generate_pseudo_legal_captures():
-        if not board.is_legal(move):
-            continue
+        
+    moves = list(board.generate_pseudo_legal_captures())
+    moves = [m for m in moves if board.is_legal(m)]
+    moves.sort(key=lambda m: move_score(board, m), reverse=True)
+    
+    for move in moves:
         board.push(move)
-        score = -quiesce(w, board, -beta, -alpha)
+        score = -quiesce(w, board, -beta, -alpha, nodes, nodes_limit)
         board.pop()
         if score >= beta:
             return beta
@@ -301,46 +340,111 @@ def quiesce(w, board, alpha, beta):
             alpha = score
     return alpha
 
-def alphabeta(w, board, depth, alpha, beta, nodes):
+def alphabeta(w, board, depth, alpha, beta, nodes, nodes_limit):
+    if nodes_limit and nodes[0] >= nodes_limit:
+        return evaluate(w, board)
+        
     nodes[0] += 1
+    
+    tt_key = board._transposition_key()
+    tt_entry = TT.get(tt_key)
+    tt_move = None
+    
+    if tt_entry and tt_entry[0] >= depth:
+        tt_depth, tt_score, tt_flag, tt_move = tt_entry
+        if tt_flag == 'EXACT':
+            return tt_score
+        elif tt_flag == 'LOWER':
+            alpha = max(alpha, tt_score)
+        elif tt_flag == 'UPPER':
+            beta = min(beta, tt_score)
+        if alpha >= beta:
+            return tt_score
+
     if board.is_checkmate():
         return -MATE_SCORE + board.ply()
     if board.is_stalemate() or board.is_insufficient_material() or board.can_claim_draw():
         return 0
     if depth == 0:
-        return quiesce(w, board, alpha, beta)
-    for move in board.legal_moves:
+        return quiesce(w, board, alpha, beta, nodes, nodes_limit)
+        
+    moves = list(board.legal_moves)
+    # Order by: 1. TT move (if exists), 2. MVV-LVA score
+    moves.sort(key=lambda m: (m == tt_move, move_score(board, m)), reverse=True)
+    
+    best_score = -INF
+    best_move = None
+    alpha_orig = alpha
+    
+    for move in moves:
         board.push(move)
-        score = -alphabeta(w, board, depth - 1, -beta, -alpha, nodes)
+        score = -alphabeta(w, board, depth - 1, -beta, -alpha, nodes, nodes_limit)
         board.pop()
+        
+        if score > best_score:
+            best_score = score
+            best_move = move
+            
         if score >= beta:
-            return beta
+            TT[tt_key] = (depth, score, 'LOWER', best_move)
+            return score
+            
         if score > alpha:
             alpha = score
-    return alpha
+            
+    if best_score <= alpha_orig:
+        TT[tt_key] = (depth, best_score, 'UPPER', best_move)
+    else:
+        TT[tt_key] = (depth, best_score, 'EXACT', best_move)
+        
+    return best_score
 
-def search(w, board, max_depth=5, movetime_ms=None):
+def search(w, board, max_depth=5, movetime_ms=None, nodes_limit=None):
     best_move, best_score = None, -INF
     start  = time.time()
     nodes  = [0]
+    
+    # If a nodes limit is given, we can search deeper until we hit the node limit
+    if nodes_limit:
+        max_depth = 99
+        
     for depth in range(1, max_depth + 1):
         d_best, d_score = None, -INF
-        for move in board.legal_moves:
+        moves = list(board.legal_moves)
+        moves.sort(key=lambda m: (m == best_move, move_score(board, m)), reverse=True)
+        
+        for move in moves:
+            if nodes_limit and nodes[0] >= nodes_limit:
+                break
+                
             board.push(move)
-            score = -alphabeta(w, board, depth - 1, -INF, INF, nodes)
+            score = -alphabeta(w, board, depth - 1, -INF, INF, nodes, nodes_limit)
             board.pop()
             if score > d_score:
                 d_score, d_best = score, move
             if score > -INF:
                 pass
+                
+        if nodes_limit and nodes[0] >= nodes_limit and d_best is None:
+            # We ran out of nodes before evaluating anything at this depth
+            break
+            
         if d_best:
             best_move, best_score = d_best, d_score
+            
         elapsed = int((time.time() - start) * 1000)
         nps     = int(nodes[0] / max(time.time() - start, 0.001))
-        print(f'info depth {depth} score cp {best_score} nodes {nodes[0]} '
-              f'nps {nps} time {elapsed} pv {best_move.uci() if best_move else "0000"}', flush=True)
+        
+        # Don't print stats every depth if we're just blazing through nodes
+        if not nodes_limit or elapsed > 100:
+            print(f'info depth {depth} score cp {best_score} nodes {nodes[0]} '
+                  f'nps {nps} time {elapsed} pv {best_move.uci() if best_move else "0000"}', flush=True)
+              
         if movetime_ms and elapsed >= movetime_ms * 0.8:
             break
+        if nodes_limit and nodes[0] >= nodes_limit:
+            break
+            
     return best_move, best_score
 
 
@@ -348,9 +452,15 @@ def search(w, board, max_depth=5, movetime_ms=None):
 # UCI loop
 # ──────────────────────────────────────────────────────────────────────
 
+def debug_log(msg):
+    print(f"[ENGINE_DEBUG] {msg}", file=sys.stderr, flush=True)
+
 def uci_loop(weights):
     board       = chess.Board()
     max_depth   = 4
+    
+    debug_log("Engine started, entering UCI loop")
+    
     print(f'id name {ENGINE_NAME} {ENGINE_VER}', flush=True)
     print('id author nnue-pytorch', flush=True)
     print('uciok', flush=True)
@@ -359,6 +469,9 @@ def uci_loop(weights):
         line = line.strip()
         if not line:
             continue
+            
+        debug_log(f"Received: {line}")
+        
         if line == 'uci':
             print(f'id name {ENGINE_NAME} {ENGINE_VER}', flush=True)
             print('id author nnue-pytorch', flush=True)
@@ -367,6 +480,7 @@ def uci_loop(weights):
             print('readyok', flush=True)
         elif line == 'ucinewgame':
             board = chess.Board()
+            clear_tt()
         elif line.startswith('position'):
             board = chess.Board()
             parts = line.split()
@@ -388,11 +502,13 @@ def uci_loop(weights):
             movetime_ms = None
             wtime = btime = winc = binc = None
             depth_override = None
+            nodes_limit = None
             i = 1
             while i < len(parts):
                 t = parts[i]
                 if t == 'movetime' and i+1 < len(parts): movetime_ms = int(parts[i+1]); i += 2
                 elif t == 'depth'    and i+1 < len(parts): depth_override = int(parts[i+1]); i += 2
+                elif t == 'nodes'    and i+1 < len(parts): nodes_limit = int(parts[i+1]); i += 2
                 elif t == 'wtime'    and i+1 < len(parts): wtime = int(parts[i+1]); i += 2
                 elif t == 'btime'    and i+1 < len(parts): btime = int(parts[i+1]); i += 2
                 elif t == 'winc'     and i+1 < len(parts): winc = int(parts[i+1]); i += 2
@@ -403,8 +519,10 @@ def uci_loop(weights):
                 inc = (winc if board.turn == chess.WHITE else binc) or 0
                 movetime_ms = max(t // 20 + inc // 2, 50)
             d = depth_override if depth_override else max_depth
-            best, _ = search(weights, board, max_depth=d, movetime_ms=movetime_ms)
-            print(f'bestmove {best.uci() if best else "0000"}', flush=True)
+            best, _ = search(weights, board, max_depth=d, movetime_ms=movetime_ms, nodes_limit=nodes_limit)
+            best_uci = best.uci() if best else "0000"
+            debug_log(f"Sending bestmove: {best_uci}")
+            print(f'bestmove {best_uci}', flush=True)
         elif line == 'quit':
             break
 
