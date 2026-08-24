@@ -55,7 +55,7 @@ W celach weryfikacyjnych przeprowadziłem eksperymenty porównawcze obejmujące 
     \item \textbf{Odwróconą:} uczenie rozpoczynane od partii o wysokim Elo, a kończone na partiach graczy początkujących.
 \end{enumerate}
 
-W ramach pracy napisałem od podstaw autorski silnik szachowy w języku Python (PyNNUE), który samodzielnie wczytuje zoptymalizowane wagi z plików w formacie \texttt{.nnue} obsługując dekompresję LEB128. Silnik opiera się na algorytmie Alpha-Beta~\cite{russell2010ai}, co uniezależniło platformę testową od obszernego i skomplikowanego kodu C++ Stockfisha. Głównym wnioskiem naukowym płynącym z badań jest to, że zaobserwowane wstrząsy oraz nagłe skoki funkcji straty (Loss Spikes) podczas przełączania koszyków Elo wynikają wyłącznie z drastycznej zmiany dystrybucji samych danych (zjawisko \textit{Co-Domain Shift})~\cite{quinonero2009dataset}. Hipoteza sugerująca, że partie silniejszych szachistów są trudniejsze do zoptymalizowania dla sieci, została przeze mnie obalona. Przeprowadzona próba odwrócona (uczenie od partii z bardzo wysokim Elo w dół) wykazała symetrię problemu, generując bardzo podobne wstrząsy podczas każdej zmiany koszyka, a różnica w całkowitym odchyleniu standardowym między obiema próbami wyniosła zaledwie 3,9\%.
+W ramach pracy napisałem od podstaw autorski silnik szachowy w języku Python (PyNNUE), który samodzielnie wczytuje zoptymalizowane wagi z plików w formacie \texttt{.nnue} obsługując dekompresję LEB128. Silnik opiera się na algorytmie Alpha-Beta~\cite{knuth1975alphabeta}, co uniezależniło platformę testową od obszernego i skomplikowanego kodu C++ Stockfisha. Głównym wnioskiem naukowym płynącym z badań jest to, że zaobserwowane wstrząsy oraz nagłe skoki funkcji straty (Loss Spikes) podczas przełączania koszyków Elo wynikają wyłącznie z drastycznej zmiany dystrybucji samych danych (zjawisko \textit{Co-Domain Shift})~\cite{quinonero2009dataset}. Hipoteza sugerująca, że partie silniejszych szachistów są trudniejsze do zoptymalizowania dla sieci, została przeze mnie obalona. Przeprowadzona próba odwrócona (uczenie od partii z bardzo wysokim Elo w dół) wykazała symetrię problemu, generując bardzo podobne wstrząsy podczas każdej zmiany koszyka, a różnica w całkowitym odchyleniu standardowym między obiema próbami wyniosła zaledwie 3,9\%.
 
 \section*{Abstract}
 
@@ -102,7 +102,7 @@ Ponadto zdefiniowałem dwa istotne cele poboczne. Pierwszym z nich było zbadani
 
 Stockfish~\cite{stockfish} to jeden z najsilniejszych na świecie, otwartoźródłowych silników szachowych, rozwijany od 2008 roku. Tradycyjnie opierał się na algorytmie przeszukiwania drzewa wariantów Alpha-Beta uzupełnionym o rozbudowane, ręcznie projektowane funkcje ewaluacji (\textit{HandCrafted Evaluation - HCE}), które oceniały pozycję na podstawie tysięcy reguł czysto taktycznych i pozycyjnych.
 
-Trzon silnika poszukującego opiera się najczęściej na algorytmie \textit{Alpha-Beta}~\cite{russell2010ai}, który stanowi optymalizację algorytmu Minimax. Drzewo wszystkich możliwych wariantów jest w nim metodycznie przeszukiwane, jednak gałęzie odrzucane są na wczesnym etapie (\textit{pruning}), gdy tylko algorytm zyska pewność, że konkretna odnoga nie zostanie racjonalnie wybrana ze względu na znalezioną wcześniej silniejszą alternatywę. Pozwala to na drastyczne obniżenie złożoności obliczeniowej. Aby zminimalizować błędy tzw. efektu horyzontu (gdy wymiana bierek zatrzymuje się na płytkiej głębokości i sztucznie zawyża wynik jednego z graczy), do algorytmu dodawane jest \textit{Quiescence Search}, które wymusza dokończenie bicia przed pobraniem oceny z funkcji ewaluacyjnej. W moim autorskim silniku PyNNUE zaimplementowałem ten algorytm wraz z systemem efektywnego sortowania zbić (\textit{MVV-LVA}).
+Trzon silnika poszukującego opiera się najczęściej na algorytmie \textit{Alpha-Beta}~\cite{knuth1975alphabeta}, który stanowi optymalizację algorytmu Minimax. Drzewo wszystkich możliwych wariantów jest w nim metodycznie przeszukiwane, jednak gałęzie odrzucane są na wczesnym etapie (\textit{pruning}), gdy tylko algorytm zyska pewność, że konkretna odnoga nie zostanie racjonalnie wybrana ze względu na znalezioną wcześniej silniejszą alternatywę. Pozwala to na drastyczne obniżenie złożoności obliczeniowej. Aby zminimalizować błędy tzw. efektu horyzontu (gdy wymiana bierek zatrzymuje się na płytkiej głębokości i sztucznie zawyża wynik jednego z graczy), do algorytmu dodawane jest \textit{Quiescence Search}, które wymusza dokończenie bicia przed pobraniem oceny z funkcji ewaluacyjnej. W moim autorskim silniku PyNNUE zaimplementowałem ten algorytm wraz z systemem efektywnego sortowania zbić (\textit{MVV-LVA}).
 
 Przez wiele lat proces ewaluacji uciętego liścia wspomnianego drzewa opierał się o ręcznie zdefiniowaną heurystykę (\textit{HandCrafted Evaluation - HCE}). Składały się na nią setki statycznych parametrów spisywanych i optymalizowanych latami, takich jak tablice wartości pól dla danych bierek (\textit{PST - Piece-Square Tables}), drobne punkty procentowe przewagi za kontrolę centrum, posiadanie par gońców czy punkty ujemne za piony izolowane. Z nadejściem nowoczesnych sieci neuronowych NNUE większość tych statycznych heurystyk uległa całkowitemu wyparciu na rzecz jednego, wysoce zoptymalizowanego wektora wag.
 
@@ -390,13 +390,13 @@ Pamiętając o motywacji ze wstępu mojej pracy — intencji zbudowania asystent
 
 \begin{thebibliography}{99}
     \bibitem{bengio2009curriculum} Yoshua Bengio, Jérôme Louradour, Ronan Collobert, Jason Weston, \textit{Curriculum learning}, Proceedings of the 26th Annual International Conference on Machine Learning (ICML), 2009.
-    \bibitem{nasu2018nnue} Yu Nasu, \textit{Efficiently Updatable Neural-Network-based Evaluation Function for Computer Shogi}, 2018.
-    \bibitem{silver2018alphazero} David Silver, Thomas Hubert, Julian Schrittwieser, et al., \textit{A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play}, Science 362 (6419), 2018.
-    \bibitem{russell2010ai} Stuart Russell, Peter Norvig, \textit{Artificial Intelligence: A Modern Approach}, 3rd Edition, Prentice Hall, 2010.
-    \bibitem{mccloskey1989catastrophic} Michael McCloskey, Neal J. Cohen, \textit{Catastrophic Interference in Connectionist Networks: The Sequential Learning Problem}, The Psychology of Learning and Motivation, Vol. 24, 1989.
+    \bibitem{nasu2018nnue} Yu Nasu, \textit{Efficiently Updatable Neural-Network-based Evaluation Function for Computer Shogi}, 23rd Game Programming Workshop (GPW), 2018.
+    \bibitem{silver2018alphazero} David Silver, Thomas Hubert, Julian Schrittwieser, et al., \textit{A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play}, Science 362 (6419), 1140-1144, 2018.
+    \bibitem{knuth1975alphabeta} Donald E. Knuth, Ronald W. Moore, \textit{An analysis of alpha-beta pruning}, Artificial Intelligence 6(4), 293-326, 1975.
+    \bibitem{mccloskey1989catastrophic} Michael McCloskey, Neal J. Cohen, \textit{Catastrophic Interference in Connectionist Networks: The Sequential Learning Problem}, The Psychology of Learning and Motivation, Vol. 24, 109-165, 1989.
     \bibitem{quinonero2009dataset} Joaquin Quiñonero-Candela, Masashi Sugiyama, Anton Schwaighofer, Neil D. Lawrence, \textit{Dataset Shift in Machine Learning}, MIT Press, 2009.
     \bibitem{pgnextract} David J. Barnes, \textit{pgn-extract: A Portable Game Notation (PGN) Manipulator for Chess Games}, \url{https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/}.
-    \bibitem{cutechess} Cutechess Team, \textit{Cutechess: a graphical user interface, command-line interface and library for playing chess}, \url{https://github.com/cutechess/cutechess}.
+    \bibitem{cutechess} Ilari Pihlajisto, Arto Jonsson, \textit{Cutechess: a graphical user interface, command-line interface and library for playing chess}, \url{https://github.com/cutechess/cutechess}.
     \bibitem{ordo} Miguel A. Ballicora, \textit{Ordo: A scientifically sound calculation of relative strength}, \url{https://github.com/michiguel/Ordo}.
     \bibitem{lc0} Leela Chess Zero Team, \textit{Leela Chess Zero}, \url{https://lczero.org/}.
     \bibitem{stockfish} Stockfish Team, \textit{Stockfish: A powerful open-source chess engine}, \url{https://github.com/official-stockfish/Stockfish}.
@@ -405,17 +405,17 @@ Pamiętając o motywacji ze wstępu mojej pracy — intencji zbudowania asystent
 \end{thebibliography}
 
 \listoffigures
-\listoftables
+% \listoftables
 
-\chapter*{Dodatek A: Skrypty automatyzujące}
+% \chapter*{Dodatek A: Skrypty automatyzujące}
 
-\begin{lstlisting}[language=bash, caption=Przykładowe uruchomienie treningu]
-python train.py \
-    /data/input/binpack/clean_1200_under_2mil.binpack \
-    --validation-datasets /data/input/binpack/clean_1200_under_200k_test.binpack \
-    --gpus 0 \
-    --lambda 0.3 \
-    --features "HalfKAv2_hm^"
-\end{lstlisting}
+% \begin{lstlisting}[language=bash, caption=Przykładowe uruchomienie treningu]
+% python train.py \
+%     /data/input/binpack/clean_1200_under_2mil.binpack \
+%     --validation-datasets /data/input/binpack/clean_1200_under_200k_test.binpack \
+%     --gpus 0 \
+%     --lambda 0.3 \
+%     --features "HalfKAv2_hm^"
+% \end{lstlisting}
 
 \end{document}
