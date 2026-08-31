@@ -1,107 +1,405 @@
-\documentclass[a2paper, portrait, 14pt]{tikzposter}
+\documentclass[12pt,a4paper]{report}
+
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{lmodern}
-\renewcommand{\familydefault}{\sfdefault} % Use sans-serif for a modern look
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{geometry}
 
-% --- Modern & Minimalistic Styling ---
-\usetheme{Simple}
-\useblockstyle{Basic}
-\usetitlestyle{Empty} % Minimalist title
+\geometry{margin=2.5cm}
 
-% Define a professional color palette
-\definecolor{Navy}{RGB}{0, 51, 102}
-\definecolor{Snow}{RGB}{250, 250, 250}
-\definecolor{Slate}{RGB}{70, 70, 70}
-
-\colorlet{backgroundcolor}{white}
-\colorlet{framecolor}{white}
-\colorlet{titlefgcolor}{Navy}
-\colorlet{titlebgcolor}{white}
-\colorlet{blocktitlebgcolor}{Navy}
-\colorlet{blocktitlefgcolor}{white}
-\colorlet{blockbodybgcolor}{Snow}
-\colorlet{blockbodyfgcolor}{Slate}
-\colorlet{blockframecolor}{Navy}
-
-% Metadata
-\title{\parbox{\linewidth}{\centering \textbf{Uczenie silnika szachowego \\ na partiach o rosnącym Elo}}}
-\author{
-    Autor: Adam Zieliński \\
-    Promotor: dr hab. Łukasz Mikulski, prof. UMK
-}
-\institute{Uniwersytet Mikołaja Kopernika Wydział Matematyki i Informatyki}
+\title{Uczenie silnika szachowego na partiach o rosnącym Elo}
+\author{Adam Zieliński}
 \date{\today}
 
 \begin{document}
 
-\maketitle
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Large Uniwersytet Mikołaja Kopernika w Toruniu\\ Wydział Matematyki i Informatyki \par}
+    \vspace{3cm}
+    {\Huge \textbf{Uczenie silnika szachowego na partiach o rosnącym Elo} \par}
+    \vspace{2cm}
+    {\Large Praca magisterska \par}
+    \vspace{2cm}
+    {\Large Autor: Adam Zieliński \par}
+    {\Large Promotor: dr hab. Łukasz Mikulski, prof. UMK \par}
+    \vfill
+    {\Large Toruń, 2026 \par}
+\end{titlepage}
 
-\block{}{
-    \begin{center}
-        \includegraphics[width=0.5\linewidth]{workflow.png}
-    \end{center}
-}
+\tableofcontents
 
-\begin{columns}
-    % --- COLUMN 1 ---
-    \column{0.5}
-    
-    \block{1. Cel Badania}{
-        \textbf{Badanie zachowania silnika NN podczas uczenia na danych o rosnącym poziomie umiejętności.}
-        \begin{itemize}
-            \item Analiza stosunku między Elo danych uczących a Elo powstałego modelu.
-            \item Wpływ curriculum learning na prędkość nauki i styl gry.
-            \item Porównanie modelu badawczego z modelem kontrolnym.
-        \end{itemize}
-    }
+\chapter*{Streszczenie}
 
-    \block{2. Hipotezy}{
-        \begin{itemize}
-            \item \textbf{H1: Szybsza nauka cech.} Model szybciej odnajdzie wzorce, gdyż gracze o niskim Elo kierują się mniej skomplikowanymi przemyśleniami niż arcymistrzowie.
-            \item \textbf{H2: Ludzki styl gry.} Model na każdym etapie będzie grał podobnie do człowieka, unikając losowych ruchów charakterystycznych dla modeli uczonych na wszystkich taktykach naraz.
-            \item \textbf{H3: Korelacja Elo.} Istnieje ścisła zależność między rankingiem zbioru treningowego a siłą gry modelu końcowego.
-        \end{itemize}
-    }
+Niniejsza praca bada wpływ uczenia programowego (\textit{curriculum learning})~\cite{bengio2009curriculum} na proces trenowania funkcji ewaluacji pozycji w silnikach szachowych opartych na architekturze NNUE (\textit{Efficiently Updatable Neural Network})~\cite{nasu2018nnue}. Głównym celem badawczym było zweryfikowanie hipotezy, czy sekwencyjne douczanie modelu na partiach pochodzących z coraz to wyższych przedziałów rankingowych (Elo) pozytywnie wpłynie na proces optymalizacji, dynamikę funkcji straty oraz końcową siłę gry w porównaniu do podejścia klasycznego, treninu na zbiorze o wymieszanym rozkładzie rankingowym, bądź jedynie z rozgrywek na poziomie arcymistrzowskim.
 
-    \block{3. Metodologia}{
-        \begin{itemize}
-            \item \textbf{Start:} Wykorzystanie modelu znającego podstawy szachów w celu optymalizacji czasu obliczeń.
-            \item \textbf{Dane:} Zbiory pogrupowane w koszyki Elo. Przejście do kolejnego koszyka po określonej liczbie epok lub osiągnięciu progu jakości.
-            \item \textbf{Zapis:} Archiwizacja wag modelu po każdej zmianie przedziału i co określoną liczbę epok.
-            \item \textbf{Kontrola:} Równoległy trening modelu na przemieszanym zbiorze danych (bez podziału na rangi).
-        \end{itemize}
-    }
+Podstawowym celem projektu było stworzenie wirtualnego asystenta do gry w szachy, który grając z użytkownikiem dynamicznie dopasowywał się do jego poziomu, tak aby ciągle odczuwał zaangażowanie bez emocji takich jak frustracja gdy przeciwnik wykorzystuje zbyt skomplikowane dla gracza taktyki, bądź znudzenie gdy taktyki są banalne. We wstępnych pracach nad projektem asystent został zamieniony na wyżej opisany eksperyment aby zweryfikować potencjalną metodę implementacji omawianego asystenta. 
 
-    % --- COLUMN 2 ---
-    \column{0.5}
+Pierwsze próby stworzenia własnego NNUE odbywały się na architekturze oferowanej przez Leela Chess Zero (\textit{LC0})~\cite{lc0}, jednak ze względu na problemy związane z dokumentacją oraz oferowanymi rozwiązaniami dla kart graficznych marki AMD jak brak możliwości pokrycia wszystkich wymogów bibliotek i sterowników jednocześnie, postanowiłem zrezygnować z LC0 na rzecz Stockfish~\cite{stockfish}, który okazało się ma rozbudowane repozytorium z narzędziami do trenowania i ogólnej pracy z NNUE nnue-pytorch~\cite{nnuepytorch}. Pracowałem na wersji z 28 marca 2026r, z cechami \textit{HalfKAv2\_hm\string^}, o których opowiem później.
 
-    \block{4. Metryki}{
-        \begin{itemize}
-            \item \textbf{Elo:} Rozgrywane turnieje przeciwko silnikom ze znanym rankingiem.
-            \item \textbf{Human-like Index:} Zgodność z ruchami ludzi.
-            \item \textbf{Loss Curve:} Zmiana funkcji straty, szczególnie przy zmianie koszyka na lepsze Elo.
-        \end{itemize}
-    }
+Zbiorem danych uczących była oficjalna baza danych serwisu Lichess z marca 2026 roku (ponad 90 milionów pojedynków). Dane zostały przetworzone za pomocą autorskiego skryptu oraz \texttt{pgn-extract}. Surowe partie PGN przefiltrowałem pod kątem minimalnej długości wariantów (\texttt{--minply 40}), poprawności zakończeń (\texttt{--nobadresults}) oraz wyeliminowania asymetrii rankingowej. Przefiltrowane dane podzieliłem na rozłączne koszyki Elo (po 2 miliony gier w każdym), patrząc na średnią arytmetyczną zapisanych rang obydwu graczy. Następnie przetransformowałem je do binarnego formatu \texttt{.binpack} którego wymaga skrypt treningowy.
 
-    \block{5. Spodziewane Wyniki}{
-        \begin{center}
-            \includegraphics[width=0.9\linewidth]{hypothetical_plot.png}
-        \end{center}
-        Model badawczy szybciej odnajdzie cechy, wystąpią skoki rozwojowe
-    }
+W celach weryfikacyjnych przeprowadziłem eksperymenty porównawcze obejmujące trzy próby:
+\begin{enumerate}
+    \item \textbf{Badawczą (curriculum learning):} uczenie realizowane kolejno od najniższych do najwyższych koszyków Elo.
+    \item \textbf{Kontrolną:} uczenie na losowo wymieszanym zbiorze danych z pełnego zakresu Elo.
+    \item \textbf{Odwróconą:} uczenie rozpoczynane od partii o wysokim Elo, a kończone na partiach graczy początkujących.
+\end{enumerate}
 
-    \block{6. Wnioski}{
-        \begin{itemize}
-            \item Weryfikacja akceleracji nauki przez prostsze dane.
-            \item Ocena przewidywalności modelu dla człowieka.
-            \item \textbf{Zastosowanie:} Asystent szachowy uczący się razem z użytkownikiem.
-        \end{itemize}
-    }
-\end{columns}
+W ramach pracy napisałem od podstaw autorski silnik szachowy w języku Python, który samodzielnie wczytuje zoptymalizowane wagi z plików w formacie \texttt{.nnue} obsługując dekompresję LEB128. Silnik opiera się na algorytmie Alpha-Beta~\cite{knuth1975alphabeta}, co uniezależniło projekt przez fakt, że nauczone sieci w deweloperskiej wersji nnue-pytorch nie pasowały swoją architekturą do żadnej wersji Stockfisha, którą testowałem. Głównym wnioskiem naukowym płynącym z badań jest to, że zaobserwowane wstrząsy oraz nagłe skoki funkcji straty (Loss Spikes) podczas przełączania koszyków Elo wynikają wyłącznie z drastycznej zmiany dystrybucji samych danych (zjawisko \textit{Co-Domain Shift})~\cite{quinonero2009dataset}. Hipoteza sugerująca, że partie silniejszych szachistów są trudniejsze do zoptymalizowania dla sieci, została przeze mnie obalona. Przeprowadzona próba odwrócona (uczenie od partii z bardzo wysokim Elo w dół) wykazała symetrię problemu, generując bardzo podobne wstrząsy podczas każdej zmiany koszyka, a różnica w całkowitym odchyleniu standardowym między obiema próbami wyniosła zaledwie 3,9\%.
+
+\section*{Abstract}
+
+This thesis investigates the impact of curriculum learning on the process of training the position evaluation function in chess engines based on the NNUE (\textit{Efficiently Updatable Neural Network}) architecture. The main research objective was to verify the hypothesis of whether sequentially training the model on games from progressively higher rating (Elo) brackets would positively affect the optimization process, loss function dynamics, and final playing strength compared to the classic approach (training on a dataset with a mixed rating distribution, or relying solely on grandmaster-level games).
+
+The primary goal of the project was to create a virtual chess assistant that, while playing with the user, would dynamically adapt to their level. This would ensure the player remains engaged without experiencing frustration from overly complex tactics or boredom from trivial ones. During the preliminary work, the assistant was replaced by the aforementioned experiment to verify a potential implementation method for the assistant.
+
+Initial attempts to create a custom NNUE were based on the architecture provided by Leela Chess Zero (\textit{LC0}). However, due to documentation issues and limited support for AMD graphics cards—on which the experiment was to be computed—I decided to switch from LC0 to Stockfish, which proved to have a comprehensive repository of tools for training and working with NNUE (nnue-pytorch). I worked with the version from March 28, 2026, utilizing the \textit{HalfKAv2\_hm\string^} features, which will be discussed later.
+
+The input data consisted of the official Lichess database from March 2026 (over 90 million games). Using a custom data processing pipeline and the \texttt{pgn-extract} tool, I filtered raw PGN files for a minimum game length (\texttt{--minply 40}), proper game endings (\texttt{--nobadresults}), and the elimination of rating asymmetry. The filtered data was divided into disjoint Elo buckets (2 million games each) based on the arithmetic mean of both players' ratings. Subsequently, these were transformed into the binary \texttt{.binpack} format required by the training script.
+
+For verification purposes, I conducted comparative experiments involving three trials:
+\begin{enumerate}
+    \item \textbf{Research (curriculum learning):} training performed sequentially from the lowest to the highest Elo buckets.
+    \item \textbf{Control:} training on a randomly mixed dataset covering the full Elo range.
+    \item \textbf{Reversed:} training starting with high-Elo games and ending with beginner games.
+\end{enumerate}
+
+As part of the thesis, I developed a custom chess engine in Python from scratch, which independently loads optimized weights from \texttt{.nnue} files and supports LEB128 decompression. The engine relies on the Alpha-Beta algorithm, which decoupled the project due to the fact that the networks trained with the developer version of nnue-pytorch did not fit with their architecture to any version of Stockfish I tested. The main scientific conclusion from the research is that the observed tremors and sudden loss function spikes during Elo bucket transitions are caused exclusively by a drastic change in the data distribution itself (the \textit{Co-Domain Shift} phenomenon). The hypothesis suggesting that games of stronger players are inherently harder for the network to optimize was thus refuted. The reversed trial (training from very high Elo games downwards) demonstrated the symmetry of the problem, producing very similar shocks at each bucket change, with the difference in total standard deviation between the two trials being a mere 3.9\%.
+
+\chapter{Wstęp}
+
+\section{Motywacja}
+
+Pomysł asystenta szachowego pojawił się dzięki mojej pracy inżynierskiej, w której stworzyłem szachownicę komunikującą się z napisanym programem który nadzorował jej przebieg i wyświetlał informacje o grze. Jedną z funkcji była rozgrywka z komputerem, do której użyłem gotowego rozwiązania Stockfish. Stąd pojawił się pomysł rozbudowy tej części projektu i zastąpienie prostej implementacji która jedynie zwracała kolejny ruch pełnoprawnym trenerem dopasowującym się do gracza, który mógłby zwracać uwagę na dobre i gorsze zagrywki, będąc na poziomie trochę wyższym od gracza, aby był w stanie szybko zrozumieć metodykę silnika. Aby dopasować poziom trudności silnika, uznałem że dobrym rozwiązaniem byłoby douczanie sieci za każdym razem gdy procent wygranych gracza przekroczy pewną wartość. Wtedy danymi uczącymi byłyby rozgrywki lekko wyprzedzające aktualne ELO gracza. Aby zbadać czy taka implementacja spełniałaby moje oczekiwania, uznałem że wpierw przeprowadzę eksperyment aby zbadać jak będzie zachowywać się silnik uczony grami o coraz to lepszej jakości.
+
+\section{Cel pracy}
+
+Chcę zbadać zachowania silnika który jest uczony coraz to lepszej jakości rozgrywkami. Ponadto zdefiniowałem dwa istotne cele poboczne. Pierwszym z nich było zbadanie zjawiska \textit{Co-Domain Shift} w sieciach neuronowych, czyli sprawdzenie, jak proces optymalizacji reaguje na drastyczną zmianę zbioru uczącego. Drugim celem było stworzenie od podstaw własnego, lekkiego silnika szachowego w języku Python pełniącego rolę samodzielnego klienta protokołu UCI. Uniezależniło to proces ewaluacji i zautomatyzowanego testowania wag od konieczności dołączania wygenerowanych plików .nnue do programu Stockfish, który okazał się problematyczny ze względu na niekompatybilną architekturę gotowych sieci z programem. Używałem oficjalnych rozwiązań Stockfish, zarówno podstawowego programu jak i projektu nnue-pytorch służącego do trenowania sieci NNUE, jednak obsługiwana architektura sieci ciągle się zmienia \cite{nnue.md}, a Stockfish nie posiada kompatybilności wstecznej z poprzednimi architekturami.
+
+\section{Hipotezy badawcze}
+
+\begin{itemize}
+    \item \textbf{H1: Szybsza nauka cech.} Założyłem, że gry graczy o niższym Elo zawierają więcej oczywistych i elementarnych taktyk, takich jak podstawienia bierek. Spodziewałem się, że prezentacja tych partii w pierwszej kolejności pozwoli sieci na szybsze przyswojenie podstawowych mechanik szachów, zanim przejdę do uczenia jej bardziej skomplikowanych, zaawansowanych strategii obecnych dla partii na poziomie arcymistrzowskim.
+    \item \textbf{H2: Ludzki styl gry.} Wysnułem hipotezę, że uczenie progresywne sprawi że mój silnik uczony na słabej jakości partiach będzie zachowywał się w sposób bardziej przypominający człowieka na danym poziomie, w porównaniu do analogicznie długo uczonego silnika na rozgrywkach z całego spektrum rankingu, oraz okazywał tą zależność przez cały proces uczenia, nawet przy zmianach danych uczących na lepszy przedział Elo.
+    \item \textbf{H3: Korelacja Elo.} Założyłem istnienie silnej zależności sugerującej, że silnik grający z użyciem funkcji oceny pozycji nauczonej na zbiorze nie przekraczającym pewnego Elo, nie będzie wykonywał ruchów na wyższym poziomie gry. Również przy zmianie grupy jest szansa na zaistnienie zjawiska katastroficznego zapominania (\textit{catastrophic forgetting})~\cite{mccloskey1989catastrophic}, gdzie nowe dane modelu spowodują przebudowę wag i chwilowy spadek efektywności, jednak w niedużym czasie model powróci do właściwego poziomu.
+\end{itemize}
+
+\chapter{Przegląd technologii}
+
+\section{Silnik Stockfish i architektura NNUE}
+
+Stockfish~\cite{stockfish} to jeden z najsilniejszych na świecie, otwartoźródłowych silników szachowych, rozwijany od 2008 roku. Tradycyjnie opierał się na algorytmie przeszukiwania drzewa wariantów Alpha-Beta uzupełnionym o ręcznie projektowane funkcje ewaluacji (\textit{HandCrafted Evaluation - HCE}), które oceniały pozycję na podstawie reguł czysto taktycznych i pozycyjnych.
+
+Trzon silnika opiera się najczęściej na algorytmie \textit{Alpha-Beta}~\cite{knuth1975alphabeta}, który stanowi optymalizację algorytmu Minimax. Drzewo wszystkich możliwych wariantów planszy jest przeszukiwane i każda opcja oceniana przez funkcję ewaluacji. Gałęzie odrzucane są na wczesnym etapie (\textit{pruning}), gdy tylko algorytm zyska pewność, że konkretna odnoga z dużą pewnością nie zostanie wybrana ze względu na znalezioną wcześniej silniejszą alternatywę. Pozwala to na drastyczne obniżenie złożoności obliczeniowej. Aby zminimalizować błędy tzw. efektu horyzontu (gdy wymiana bierek zatrzymuje się na płytkiej głębokości i sztucznie zawyża wynik jednego z graczy), do algorytmu dodawane jest \textit{Quiescence Search}, które wymusza dokończenie bicia przed pobraniem oceny z funkcji ewaluacyjnej. W moim autorskim silniku zaimplementowałem ten algorytm.
+
+Przez wiele lat proces ewaluacji wspomnianego drzewa opierał się o ręcznie zdefiniowaną heurystykę (\textit{HandCrafted Evaluation - HCE}). Składały się na nią setki parametrów spisywanych i optymalizowanych latami, takich jak tablice wartości pól dla danych bierek (\textit{PST - Piece-Square Tables}), drobne punkty procentowe przewagi za kontrolę centrum, posiadanie par gońców czy punkty ujemne za piony izolowane. Przy pojawieniu się NNUE większość tych statycznych heurystyk uległa całkowitemu zastąpieniu na rzecz jednej niewielkiej sieci neuronowej.
+
+NNUE (\textit{Efficiently Updatable Neural Network}) zostało wprowadzone w roku 2020, pierwotnie zaprojektowanej przez Yu Nasu dla shogi~\cite{nasu2018nnue}. NNUE to płytka, fully connected sieć neuronowa zintegrowana bezpośrednio z silnikiem przeszukującym, która zastąpiła tradycyjną funkcję HCE. Główną zaletą tej architektury jest jej dopasowanie do specyfiki gry w szachy przy wykonywaniu pojedynczego ruchu na planszy większość cech pozycji nie ulega zmianie, co pozwala na przyrostowe aktualizowanie wartości aktywacji pierwszej warstwy sieci zamiast przeliczania całej pozycji od zera. W wersjach takich jak \textit{HalfKAv2\_hm\string^}) stan planszy reprezentowany jest jako rzadki wektor cech opisujący relacje pomiędzy pozycją króla a położeniem pozostałych bierek, co pozwala na ocenę dynamiki pozycji przy zachowaniu wysokiej wydajności obliczeniowej.
+
+Zastosowany w tej pracy model używa struktury danych wejściowych (cech) oznaczonych jako \textit{HalfKAv2\_hm\string^}. Przedrostek \textit{Half} oznacza ewaluację dokonywaną z perspektywy połowy planszy, czyli tylko dla gracza, który ma w danej chwili wykonać ruch. Litery \textit{K} (King) oraz \textit{A} (All) informują o tym, że wektor koduje absolutnie wszystkie relacje pozycyjne pomiędzy Królem a każdą bierką na planszy, podczas gdy \textit{v2} oznacza drugą, ulepszoną generację tego zbioru. Kluczowy jest jednak przyrostek \textit{hm} (\textit{highly modified}), który wprowadza silnie zmodyfikowaną strukturę podziału. W tej iteracji wejściowa warstwa rzadka ma rozmiar 704 cech przypadających na jeden z 32 osobnych wirtualnych "koszyków" Króla (11 typów bierek pomnożonych przez 64 dostępne pola na szachownicy), oraz dodatkowe 8 koszyków układu \textit{layer-stacks} zależnych od ilości bierek pozostałych na stole.
+
+\section{Baza danych Lichess}
+
+Lichess.org~\cite{lichess} jest jedną z największych na świecie otwartych platform szachowych, regularnie udostępniającą publicznie kompletne bazy danych partii rozegranych przez użytkowników serwisu. Zbiór ten stanowi idealne źródło danych treningowych na potrzeby eksperymentów z uczeniem maszynowym ze względu na swoją reprezentatywność, wolumen oraz szczegółowość metadanych.
+
+Każda partia w bazie zapisana jest w formacie PGN (\textit{Portable Game Notation}) i zawiera m.in. dokładne rankingi Elo obu graczy, kontrolę czasu oraz uzgodniony wynik. Różnorodność poziomów umiejętności graczy od początkujących (\textit{Elo < 1000}) po arcymistrzów (\textit{Elo > 2700}) jest kluczowym elementem dla przeprowadzanego eksperymentu curriculum learning. Pozwala z jednego pobranego pliku wyodrębnić kubełki przedziałów Elo, dzięki zapisie o nich w metadanych każdej rozgrywki.
+
+\section{Narzędzia pomocnicze}
+
+Proces przetwarzania danych, przeprowadzenia treningu oraz automatyzacji turniejów ewaluacyjnych wymagał użycia danego zestawu dodatkowych narzędzi open-source:
+
+\begin{itemize}
+    \item \textbf{pgn-extract}~\cite{pgnextract} zaawansowane narzędzie wiersza poleceń przeznaczone do przeszukiwania, filtrowania i parsowania plików PGN. W ramach przeprowadzonego eksperymentu posłużyło do wstępnego filtrowania partii według kryteriów takich jak minimalna liczba posunięć (filtracja zagrań zbyt krótkich lub porzuconych), gier bez informacji o poziomie Elo graczy oraz odrzucenie partii zakończonych nietypowo (np. z powodu problemów technicznych z połączeniem).
+    \item \textbf{Cutechess}~\cite{cutechess} narzędzie wiersza poleceń służące do automatycznego przeprowadzania turniejów pomiędzy silnikami szachowymi operującymi na protokole UCI (Universal Chess Interface). Pozwoliło na obiektywną weryfikację siły gry poszczególnych iteracji modelu w kontrolowanych warunkach (z jednakową kontrolą czasu i zdefiniowanymi pozycjami otwarć). Następnie każda rozgrywka została zapisana w pliku PGN do dalszej analizy.
+    \item \textbf{Ordo}~\cite{ordo} narzędzie statystyczne dedykowane do wyznaczania rankingów Elo na podstawie wyników bezpośrednich pojedynków pomiędzy silnikami. Pozwala na precyzyjne obliczenie siły gry modelu wraz z przedziałami ufności na podstawie rozegranych turniejów w Cutechess.
+\end{itemize}
+
+\section{Wyzwania technologiczne i implementacyjne}
+
+Realizacja eksperymentu wiązała się z koniecznością rozwiązania istotnych problemów natury technicznej, z których główne dotyczyły wyboru odpowiedniej architektury sztucznej inteligencji oraz jej integracji z modułem ewaluacyjnym i turniejowym.
+
+\subsection{Problemy z architekturą Leela Chess Zero (LC0)}
+
+Perwotny plan zakładał wykonanie eksperymentu z użyciem architektury oferowanej przez Leela Chess Zero (\textit{LC0})~\cite{lc0}. Wybór wydawał się trafiony przez popularność LC0 między innymi w badaniach nad szachową sztuczną inteligencją~\cite{silver2018alphazero} oraz poradnik na głównej stronie projektu dotyczący uczenia własnej sieci na danych uczących. Jednak ostatecznie zrezygnowałem z tego pomysłu przez problemy uruchomienia procesu uczenia spowodowane trudnościami w zaspokojeniu wszelkich wymagań wersji bibliotek Python, które niekiedy wykluczały się nawzajem.
+
+Kolejną nie do pominięcia przeszkodą okazały się ograniczenia sprzętowe oraz wsparcie układów innych niż NVIDIA. Obliczenia na potrzeby pracy miały być wykonywane na karcie graficznej marki AMD (Radeon RX 6800 XT). Ekosystem LC0 był zoptymalizowany przede wszystkim pod kątem bibliotek CUDA, a próby uruchomienia treningu przy użyciu alternatywnych technologii, takich jak OpenCL, były mało stabilne, wymagały skomplikowanej konfiguracji i nie pozwalały na optymalne wykorzystanie dostępnej mocy obliczeniowej GPU. Z tego względu ostatecznie zrezygnowałem z LC0 na rzecz środowiska silnika Stockfish oraz oferowanego przez niego narzędzia \texttt{nnue-pytorch}. Posiadało ono znacznie obszerniejsze repozytorium oraz wsparcie pozwalające na efektywną konteneryzację pod sterownikami platformy AMD ROCm, które to już bez większej ingerencji z mojej strony pozwoliło na dostęp do środowiska już w pełni skonfigurowanego.
+
+\subsection{Złożoność Stockfisha i ewaluacja plików NNUE}
+
+Mimo pomyślnego przygotowania procesu uczenia sieci za pomocą \texttt{nnue-pytorch}, pojawił się nowy problem logistyczny związany z masową ewaluacją wygenerowanych modeli. Każda sprawdzana epoka treningowa produkowała plik w formacie \texttt{.nnue}, zawierający wagi dla badanej architektury (w tym wypadku dla układu cech \textit{HalfKAv2\_hm\string^}).
+
+Silnik Stockfish napisany jest w języku C++, jest to ogromnie złożony projekt z racji na wiele lat rozwoju przez społeczność. Więc nie do końca dziwi mnie fakt że wiele wersji silnika Stockfish było niekompatybilnych z moją architekturą nauczonych już sieci NNUE. A był on wymagany w celu załadowania wygenerowanych sieci podczas uczenia aby mogły być użyte w faktycznych grach z interfejsem UCI. 
+
+Rozwiązaniem tego problemu okazało się całkowite odizolowanie się od Stockfish i napisanie od podstaw własnego silnika w języku Python. Moje autorskie rozwiązanie mogłem dowoli modyfikować i dostosować pod własne sieci NNUE i umożliwić jego załadowanie, samodzielnie parsując wagi do macierzy \texttt{NumPy}. Umożliwiło to swobodne i natychmiastowe ładowanie dowolnej epoki sieci do prostego drzewa Alpha-Beta, z ominięciem ograniczeń architektonicznych C++ narzucanych przez środowisko klasycznego Stockfisha.
+
+\chapter{Przygotowanie danych}
+
+\section{Pozyskiwanie i filtrowanie danych uczących (PGN)}
+
+Proces przygotowania zbioru treningowego rozpocząłem od pobrania surowych archiwów PGN z otwartego repozytorium bazy danych Lichess. Ze względu na fakt, że surowa baza zawiera miliony partii o bardzo zróżnicowanej jakości, konieczna była filtracja w celu odrzucenia niepełnych bądź błędnych partii które mogły by zaburzyć proces uczenia.
+
+Do wstępnej obróbki plików PGN wykorzystałem program pgn-extract. Zastosowałem następujące parametry filtrowania:
+
+\begin{itemize}
+    \item \textbf{Minimalna długość partii (--minply 40)} Partie krótsze niż określony próg 40 posunięć zostały odrzucone. Pozwoliło to wyeliminować szybkie remisy, poddania w debiucie oraz ogólnie partie zerwane na wczesnym etapie.
+    \item \textbf{Odrzucenie nietypowych zakończeń (--nobadresults)} Filtruje partie zakończone z przyczyn technicznych (porzucenie połączenia, awaria serwera, błędy protokołu), pozostawiając jedynie pojedynki rozstrzygnięte w sposób naturalny (mat, poddanie, pat czy przekroczenie czasu).
+    \item \textbf{Jednolity poziom graczy} Odrzucono partie z dużą dysproporcją rankingową pomiędzy zawodnikami, aby uniknąć sytuacji, w której wysoce asymetryczna jakość zagrań zaburzałaby ocenę cech pozycji.
+    \item \textbf{Redukcja szumu tekstowego i objętości (-C -V -N):} Zastosowałem parametry usuwające z plików PGN wszelkie zbędne komentarze (\texttt{-C}), warianty poboczne i analizy innych graczy (\texttt{-V}) oraz liczbowe systemy oceny zagrań NAG (\texttt{-N}). Dzięki temu stworzyłem plik zawierający czysty zapis wyłącznie głównej linii wymaganej dla sztucznej inteligencji.
+    \item \textbf{Kontrola rozmiaru koszyka (--stopafter 2000000):} Przekazałem narzędziu argument nakazujący zatrzymanie pracy natychmiast po znalezieniu dokładnie dwóch milionów gier. Było to kluczowe dla eksperymentu, ponieważ pozwoliło mi to utworzyć zbalansowane koszyki, co z kolei zagwarantowało, że uczyłem silniki dokładnie przez taką samą ilość kroków na każdym poziomie Elo.
+    \item \textbf{Minimalizacja formatu zapisu (--notags --nomovenumbers):} Usunąłem również większość metadanych i numerację samych ruchów wewnątrz pliku, drastycznie zmniejszając jego bazowy rozmiar. Zabezpieczyło to potok przed nadmiernym użyciem zasobów przed tworzeniem struktury binpack.
+\end{itemize}
+
+\section{Narzędzia autorskie}
+
+Jednym z kluczowych wyzwań badawczych było odseparowanie mojego środowiska eksperymentalnego od implementacji silnika Stockfish, przez już wspomniany problem z kompatybilnością architektury NNUE.
+
+Drugim narzędziem był skrypt automatyzujący przebieg testu cutechess-cli. Mój skrypt automatycznie pobiera po kolei wszystkie modele ze wskazanego katalogu i symuluje rozgrywki przeciwko sąsiadującym modelom, aby zobaczyć jak w czasie zmieniają się ich statystyki jak liczba wygranych, remisów, ogólnych historii gier i na ich podstawie obliczana jest różnica Elo między modelami. Wyniki każdego sparringu są zapisywane do pliku JSON ze statystykami, oraz surowe historie gier do oddzielnego pliku pgn.
+
+\section{Podział na koszyki Elo}
+
+Rozdzieliłem partie na koszyki przed wyczyszczeniem gier z użyciem pgn-extract, aby podczas procesu podziału mieć dostęp do metadanych, które w procesie czyszczenia są usuwane. Przygotowałem w tym celu prosty skrypt Python z użyciem biblioteki python-chess, który w pętli czyta partię, oblicza średnie Elo graczy, odrzucając jeśli dla któregoś z graczy nie jest podana i zapisuje do pliku pgn o odpowiednim przedziale.
+
+\section{Transformacja do formatu binpack}
+
+Trening sieci NNUE za pomocą biblioteki nnue-pytorch wymaga przekształcenia tekstu w formacie PGN do dedykowanego, skompresowanego formatu binarnego binpack. Zamiana jest wykonywana w dwóch etapach.
+
+Zapis PGN parsowany jest do uproszczonej postaci tekstowej, w której każda linia reprezentuje stan planszy (w notacji FEN) połączony z wykonanym ruchem, wynikiem partii oraz oceną ewaluacyjną, do której może posłużyć gotowy silnik.
+
+Za pomocą wbudowanych narzędzi konwertujących nnue-pytorch, plik pośredni ulega binarnej kompresji. Format .binpack rezerwuje niewielką liczbę bitów na reprezentację roszad, praw do bicia w przelocie oraz rzadkich wektorów pozycji bierek.
+Transformacja ta redukuje rozmiar danych na dysku o ponad 80\% w porównaniu do surowego PGN oraz drastycznie zwiększa przepustowość odczytu (I/O) podczas treningu na GPU, eliminując wąskie gardło ładowania danych uczących.
+
+\chapter{Proces uczenia}
+
+\section{Architektura eksperymentu}
+
+Eksperyment badawczy zaprojektowałem w celu porównania dynamiki uczenia oraz końcowych właściwości modelu poddawanego uczeniu progresywnemu (\textit{curriculum learning}) względem podejścia klasycznego (kontrolnego) oraz wariantu odwróconego uczenia progresywnego. Przepływ danych oraz poszczególne etapy przetwarzania i ewaluacji przedstawiono na schemacie (Rysunek~\ref{fig:workflow}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth]{workflow.png}
+    \caption{Schemat przepływu danych oraz architektury eksperymentu badawczego.}
+    \label{fig:workflow}
+\end{figure}
+
+Cały proces eksperymentu składa się z następujących kroków:
+
+\begin{enumerate}
+    \item \textbf{Przygotowanie i przefiltrowanie bazy danych PGN:} Surowe partie pobrane z serwisu Lichess poddawane są czyszczeniu.
+    \item \textbf{Podział na koszyki Elo oraz transformacja danych:} W wariancie badawczym przefiltrowane partie rozdzielane są na osobne grupy reprezentujące rosnące przedziały rankingowe (po 2~miliony partii na koszyk). W przypadku próby kontrolnej partie z różnych przedziałów są losowo wymieszane w ramach jednego zbioru. Następnie dane są ewaluowane i konwertowane do binarnego formatu \texttt{.binpack}. Analogiczny proces jest również wykonany dla danych walidacyjnych (po 200~tysięcy partii na koszyk).
+    \item \textbf{Trening sieci neuronowej:} Uczenie odbywa się przy użyciu biblioteki \texttt{nnue-pytorch}. W wariancie badawczym model po osiągnięciu założonej liczby epok (100 epok na koszyk) przechodzi do kolejnego zbiornika PGN, kontynuując naukę z ostatniego punktu kontrolnego (\textit{checkpoint}) poprzedniego etapu.
+    \item \textbf{Obliczenie metryk pośrednich i ewaluacja:} Po stworzeniu plików checkpoint przez skrypt treningowy wykonuję serializację zapisanych wag sieci do plików \texttt{.nnue}, następnie uruchamiam skrypt run\_tournament który automatycznie porównuje ze sobą stworzone sieci na różne sposoby wykorzystując do tego narzędzie \texttt{cutechess-cli}
+    \item \textbf{Eksploracja danych i wnioskowanie:} Zgromadzone informacje o procesie uczenia jak i późniejszej ewaluacji silników poddane zostaną analizie z której wyciągnę wnioski w celu weryfikacji postawionych hipotez.
+\end{enumerate}
+
+\section{Parametry treningu}
+
+Trening sieci realizowano z wykorzystaniem frameworka \texttt{nnue-pytorch} (opartego na \texttt{PyTorch Lightning}). Zastosowano spójny zestaw hiperparametrów dla wszystkich analizowanych wariantów eksperymentalnych:
+
+\begin{itemize}
+    \item \textbf{Reprezentacja cech (\textit{Feature Set}):} Zastosowałem układ \textit{HalfKAv2\_hm\string^}. Ten format reprezentuje rzadkie wektory uwzględniające relacje między własnym i obcym królem a całą resztą bierek, gdzie pozycje dzielone są na 8 niezależnych koszyków \textit{layer-stacks} w zależności od obecnej fazy gry (liczby figur pozostałych na stole).
+    \item \textbf{Wielkość wsadu (\textit{Batch Size}):} Trening prowadzono z rozmiarem wsadu równym $16\,384$ pozycji. Wybór tak dużego wsadu zapewnia wysoką stabilność estymacji gradientu na kartach graficznych o dużej pamięci VRAM oraz optymalne wykorzystanie mocy obliczeniowej GPU.
+    \item \textbf{Współczynnik straty (\textit{Lambda}):} Ustawiając parametr $\lambda = 0{,}3$, precyzyjnie uregulowałem stosunek znaczenia oceny między dwoma różnymi ujęciami błędu. Znaczyło to, że 30\% docelowej wartości wag dla funkcji straty uwarunkowałem na idealnej, statycznej ocenie silnika Stockfish nałożonej na historyczną pozycję gry, podczas gdy pozostałe 70\% podyktowane było bezpośrednim rezultatem faktycznej partii pomiędzy dwoma ludźmi pobranej z bazy Lichess.
+    \item \textbf{Liczba epok i harmonogram:} Dla każdego koszyka rankingowego zaplanowano po 100 epok uczenia (co sumarycznie dla 3 koszyków przekłada się na 300 epok i około 50-80 godzin ciągłych obliczeń). Zapis stanu sieci (\textit{checkpoint}) wykonywany był co 10 epok (\texttt{--network-save-period 10}).
+\end{itemize}
+
+Przykładowe uruchomienie procesu uczenia wewnątrz środowiska przedstawia poniższy listing:
+
+\begin{lstlisting}[language=bash, caption=Polecenie uruchamiające proces uczenia na pierwszym koszyku Elo]
+python train.py \
+    clean_1200_under_2mil.binpack \
+    --validation-datasets clean_1200_under_200k.binpack \
+    --default-root-dir /data/trained_nets/ \
+    --gpus 0 \
+    --threads 4 \
+    --batch-size 16384 \
+    --lambda 0.3 \
+    --max-epochs 100 \
+    --features "HalfKAv2_hm^" \
+    --network-save-period 10
+\end{lstlisting}
+
+\section{Infrastruktura obliczeniowa}
+
+Ze względu na skomplikowane zależności bibliotek (\texttt{PyTorch}, \texttt{CUDA}/\texttt{ROCm}, \texttt{PyTorch Lightning}) oraz wymóg odizolowania środowiska uruchomieniowego, cały proces uczenia oraz serializacji modeli został wykonany wewnątrz kontenera Docker, którego plik uruchomieniowy stanowi część projektu nnue-pytorch, do których dodałem swoje modyfikacje aby współpracował z posiadaną przeze mnie kartą graficzną.
+
+Środowisko sprzętowo-programowe wykorzystane w eksperymencie obejmowało:
+
+\begin{itemize}
+    \item \textbf{Jednostkę obliczeniową (GPU):} Karta graficzna AMD Radeon RX 6800 XT z 16 GB pamięci VRAM, wykorzystująca przyspieszenie sprzętowe w środowisku sterowników ROCm. Ponieważ proces uczenia przebiegał w izolowanym kontenerze Docker, kluczowe było udostępnienie w nim bezpośredniego dostępu do sprzętu fizycznego. Osiągnięto to poprzez przekazanie do kontenera interfejsów systemowych \texttt{/dev/kfd} (AMD Kernel Fusion Driver) -- głównego modułu jądra Linux odpowiedzialnego za komunikację na poziomie węzłów obliczeniowych i uruchamianie zaawansowanych obliczeń zrównoleglonych na GPU, oraz \texttt{/dev/dri} (Direct Rendering Infrastructure) -- modułu pozwalającego środowisku na bezpośredni dostęp do sprzętu, prawidłową identyfikację karty graficznej i sprawną alokację pamięci VRAM.
+    \item \textbf{Konfigurację kontenera:} Kontener uruchamiano z prawami dostępu do grup systemowych \texttt{render} oraz \texttt{video}, z nieskończonym limitem blokowania pamięci (\texttt{--ulimit memlock=-1}) oraz zwiększonym rozmiarem stosu, co wyeliminowało wąskie gardła podczas przesyłania dużych zbiorów \texttt{.binpack} z dysku do pamięci GPU.
+    \item \textbf{Środowisko wykonawcze (Python):} Środowisko wewnątrz kontenera zostało dostosowane aby wszystkie wersje pakietów Python były spójne z kombinacją wszystkich zależności i wymagań.
+\end{itemize}
+
+\chapter{Ewaluacja i wyniki}
+
+\section{Metryki oceny}
+
+\begin{itemize}
+    \item Ranking Elo (turnieje Cutechess).
+    \item Zgodność z ruchami ludzkimi (Human-like Index).
+    \item Krzywe funkcji straty (Loss Curve).
+\end{itemize}
+
+\section{Wyniki eksperymentu}
+
+Przy użyciu napisanego skryptu ewaluacyjnego \texttt{run\_tournament\_nnue.py} zebrałem szczegółowe statystyki z przeprowadzonych turniejów. Z logów zarejestrowanych w formacie JSON wynika, że wchodząc w kolejne wyższe pułapy testowe (ograniczanego na poziomie 1350, 1500 oraz 1800 Elo bazowego silnika Stockfish), z każdą kolejną epoką silnik notował powolny, ale zauważalny trend wzrostowy. Wartość Elo rosła od początkowych wartości ujemnych, zbiegając w kierunku wyników dodatnich przeciwko wartościom referencyjnym.
+
+Na Rysunku~\ref{fig:elo_cumulative} przedstawiono skumulowany postęp siły gry (wartość Elo) w kolejnych epokach treningowych dla grupy kontrolnej (uczonej na wymieszanych danych) oraz grupy badawczej (poddanej procesowi \textit{curriculum learning}). Jak można zauważyć, model kontrolny wykazuje stosunkowo płynny przyrost siły na przestrzeni całego treningu. Z kolei w przypadku modelu badawczego postęp ten charakteryzuje się znacznie wyższą wariancją w obrębie danego koszyka.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{elo_cumulative_progression_control.png}
+        \caption{Grupa kontrolna (brak zmiany koszyków)}
+        \label{fig:elo_cumulative_control}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{elo_cumulative_progression_research.png}
+        \caption{Grupa badawcza (zmiana koszyków co 100 epok)}
+        \label{fig:elo_cumulative_research}
+    \end{subfigure}
+    \caption{Skumulowany postęp Elo na przestrzeni epok.}
+    \label{fig:elo_cumulative}
+\end{figure}
+
+W celu lepszego zrozumienia zachowania modelu badawczego w momentach tuż przed zmianą zestawu danych uczących, wygenerowano dodatkowe wykresy ograniczające analizę do trzech kluczowych momentów -- punktów zapisu silnika odpowiadających ostatnim iteracjom w każdym koszyku. Rysunek~\ref{fig:elo_research_3} uwydatnia, jak kształtowała się siła gry dla poszczególnych silników (rozpatrywanych jako 3 oddzielne sieci badane w tym samym czasie) podczas tych weryfikacji.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{elo_cumulative_progression_research_3.png}
+        \caption{Skumulowane Elo dla 3 silników przed zmianą danych}
+        \label{fig:elo_cumulative_research_3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{elo_differences_research_3.png}
+        \caption{Różnice Elo dla 3 silników przed zmianą danych}
+        \label{fig:elo_differences_research_3}
+    \end{subfigure}
+    \caption{Wykresy dla grupy badawczej uwzględniające wyniki ewaluacji z udziałem 3 silników, badające stan wag bezpośrednio przed zmianą danych treningowych (ostatnie wersje z poszczególnych przedziałów).}
+    \label{fig:elo_research_3}
+\end{figure}
+
+Kolejnym niezwykle interesującym aspektem są przyrosty (bądź spadki) siły gry pomiędzy kolejnymi ewaluacjami turniejowymi. Na Rysunku~\ref{fig:elo_differences} zestawiono różnice punktowe Elo z pomiaru na pomiar dla obu grup, co ukazuje dynamikę i stabilność przyswajania wiedzy przez sieci.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{elo_differences_control.png}
+        \caption{Różnice Elo -- grupa kontrolna}
+        \label{fig:elo_differences_control}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{elo_differences_research.png}
+        \caption{Różnice Elo -- grupa badawcza}
+        \label{fig:elo_differences_research}
+    \end{subfigure}
+    \caption{Dynamika zmian (różnica Elo z epoki na epokę) w trakcie procesu uczenia.}
+    \label{fig:elo_differences}
+\end{figure}
+
+\subsection{Zgodność z ruchami ludzkimi (Move Matching)}
+
+Weryfikację założenia, że silnik po procesie \textit{curriculum learning} będzie grać w sposób bardziej zbliżony do człowieka na danym poziomie, przeprowadzono badając tzw. Human-like Index. Za pomocą autorskiego skryptu zestawiono odpowiedzi silnika na zadane pozycje (przeszukiwanie o głębokości równej 1) z faktycznymi posunięciami wykonanymi przez człowieka w partiach historycznych z przedziałów Elo użytych w danym koszyku.
+
+Na Rysunku~\ref{fig:human_like_comparison} zobrazowano procent zgodności odpowiedzi silnika z posunięciami ludzkimi w trakcie trwania treningu. Należy zaznaczyć, że podczas testów grupy badawczej zbiór testowy PGN ulegał zmianie w okolicach epoki 100 oraz 200, odpowiadając charakterystyce wczytywanego w danym momencie koszyka (odpowiednio dla poziomów Elo: 1200, 1500 oraz 1800). Z kolei w grupie kontrolnej model badany był bez przerwy na całym przekroju poziomów (0-1800).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{human_like_comparison.png}
+    \caption{Skuteczność przewidywań ludzkich ruchów w kolejnych epokach treningu.}
+    \label{fig:human_like_comparison}
+\end{figure}
+
+Z zaprezentowanych wyników jednoznacznie wynika, że w miarę upływu treningu wewnątrz każdego z koszyków, zgodność z ludzkimi zagraniami sukcesywnie spada. Dzieje się tak, ponieważ sieć optymalizuje wiedzę i częściej wybiera obiektywnie lepsze zagrania, oduczając się ruchów typowych dla amatorów. Warto jednak zauważyć skok parametru Human-like Index występujący przy przejściu do kolejnego koszyka (np. tuż po epoce 100 i 200). Wskazuje on na to, że sieć pod wpływem nowych danych dopasowuje się na krótko do wzorców zachowań charakterystycznych dla graczy z nowego przedziału Elo, po czym w miarę dalszej nauki znów zaczyna je optymalizować na rzecz zagrań lepszych pod względem ewaluacyjnym. 
+
+Co więcej, najwyższy pułap dopasowania w grupie kontrolnej (ponad 15\% względem zbioru 0-1800) znacząco przewyższa początkowe wskaźniki modelu badawczego z pierwszego etapu, co wskazuje, że samo zjawisko \textit{curriculum learning} nie ułatwia nauki naśladowania najsłabszych graczy i rzuca krytyczne światło na hipotezę H2 z technicznego punktu widzenia.
+
+\section{Analiza skoków rozwojowych}
+
+Sprawdziłem, w jakim stopniu zmiana zbioru z danymi najsłabszych szachistów na dane uchodzące za bardziej złożone, pochodzące z puli mistrzowskiej (gdzie Elo rośnie diametralnie) wpływała na siłę silnika i proces jego optymalizacji. Na Rysunku~\ref{fig:loss_comparison} przedstawiono krzywe funkcji straty dla obu głównych wariantów. Zestawiając je ze sobą, odnotowałem na wykresie grupy badawczej niespodziewane, gwałtowne piki (\textit{Loss Spikes}) występujące dokładnie w momentach zmiany zestawu uczącego (w okolicach epoki 100 oraz 200). Analiza logów z treningu pokazała, że zmienność mikroszumu od ogólnego trendu (\textit{Noise Volatility}) podskoczyła drastycznie o 81\% w chwili zmiany bazy danych w porównaniu z gładkimi spadkami obserwowanymi na wykresie próby kontrolnej (na której wymieszałem dane losowo ze wszystkich poziomów rankingu), co uderzyło we wskaźnik całkowitej zmienności błędu wzrostem o 147\%. 
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graph_control.png}
+        \caption{Krzywa funkcji straty -- grupa kontrolna}
+        \label{fig:loss_control}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graph_research.png}
+        \caption{Krzywa funkcji straty -- grupa badawcza}
+        \label{fig:loss_research}
+    \end{subfigure}
+    \caption{Porównanie krzywych błędów treningowych z widocznymi pikami straty w momentach zmiany dystrybucji danych w grupie badawczej.}
+    \label{fig:loss_comparison}
+\end{figure}
+
+Odbicie tego wstrząsu jest również widoczne na wygenerowanym wcześniej wykresie różnic Elo dla grupy badawczej (Rysunek~\ref{fig:elo_differences_research}) -- w miejscach zmiany koszyka (odpowiadających epokom granicznym) można zaobserwować wychylenia i chwilową niestabilność przyrostów punktowych w porównaniu do dużo mniejszych amplitud w grupie kontrolnej. Model tracił krótkotrwale stabilność parametrów. Przyczyną tego zjawiska nie był obiektywnie wyższy poziom partii szachowych, lecz zmiana dystrybucji danych, znana jako zjawisko \textit{Co-Domain Shift}.
+
+\chapter{Wnioski}
+
+\section{Weryfikacja hipotez}
+
+Na podstawie wyciągniętych wniosków z analizy krzywych, zaprezentowanych na Rysunkach \ref{fig:elo_cumulative} i \ref{fig:elo_differences}, hipotezę \textbf{H1} należy uznać za obaloną. Okazało się, że podawanie bardzo słabych pod względem taktycznym gier na samym początku nauki nie stymulowało i nie przyspieszało znacząco procesu uczenia. Zastosowanie metody Curriculum Learning z nagłymi zmianami poziomu Elo negatywnie wpływało na optymalizację, powodując zauważalne spadki wydajności wynikające z nagłej zmiany dystrybucji danych. Zjawisko to uwidacznia się w postaci wahań i skoków wariancji w modelu badawczym (szczególnie przy zmianach koszyków), w przeciwieństwie do stabilniejszego trendu obserwowanego w grupie kontrolnej.
+
+Analiza odchyleń w grupie kontrolnej doprowadziła również do odrzucenia hipotezy \textbf{H3}. Zobrazował to dodatkowy wariant z eksperymentu odwróconego (uczenie od partii arcymistrzowskich w dół do słabych), którego krzywą uczenia przedstawiono na Rysunku~\ref{fig:loss_reverse}. 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{graph_loss_reverse.png}
+    \caption{Krzywa funkcji straty dla eksperymentu odwróconego (od trudnych do łatwych partii).}
+    \label{fig:loss_reverse}
+\end{figure}
+
+Wykresy obu wariantów przeplatały się w sposób całkowicie symetryczny z różnicą zmienności Total Loss Std sięgającej na końcu zaledwie ułamkowych (niecałych czterech) procent. Podobnie jak w wariancie badawczym, tutaj również zaobserwowano analogiczne piki błędu występujące przy zmianach koszyków. Powyższe wyniki wskazują na to, że spadki wydajności nie są wywoływane przez wyższy lub niższy poziom skomplikowania samych partii, lecz wynikają bezpośrednio z nagłej zmiany dystrybucji danych uczących. Potwierdza to obecność zjawiska szoku (\textit{Co-Domain Shift}), które destabilizuje modele trenowane z wykorzystaniem Curriculum Learning.
+
+\section{Zastosowania praktyczne}
+
+% Interaktywny asystent szachowy.
+Mając na uwadze pierwotną motywację pracy — cel stworzenia interaktywnego asystenta szachowego, który w sposób adaptacyjny douczałby się nowych posunięć na bieżąco — uzyskane wyniki sugerują ostrożność w stosowaniu tego podejścia. Wymiana koszyków danych uczących na nowsze w działającym modelu mogłaby doprowadzić do zaburzeń optymalizacji w czasie rzeczywistym. Stabilniejszym rozwiązaniem byłoby zaimplementowanie mechanizmu wprowadzającego losowe, historyczne dane wymieszane z nowymi (np. przy użyciu buforowanego \textit{Continuous Data Replay}) lub zastosowanie warunkowania wektorem siły w fazie ewaluacji. Pozwoliłoby to na ustalanie poziomu trudności bez konieczności nagłego modyfikowania dystrybucji danych w tle.
+
+\section{Kierunki dalszych badań}
+
+\begin{thebibliography}{99}
+    \bibitem{bengio2009curriculum} Yoshua Bengio, Jérôme Louradour, Ronan Collobert, Jason Weston, \textit{Curriculum learning}
+    \bibitem{nasu2018nnue} Yu Nasu, \textit{Efficiently Updatable Neural-Network-based Evaluation Function for Computer Shogi}
+    \bibitem{silver2018alphazero} David Silver, Thomas Hubert, Julian Schrittwieser, et al., \textit{A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play}
+    \bibitem{knuth1975alphabeta} Donald E. Knuth, Ronald W. Moore, \textit{An analysis of alpha-beta pruning}
+    \bibitem{mccloskey1989catastrophic} Michael McCloskey, Neal J. Cohen, \textit{Catastrophic Interference in Connectionist Networks: The Sequential Learning Problem}
+    \bibitem{quinonero2009dataset} Joaquin Quiñonero-Candela, Masashi Sugiyama, Anton Schwaighofer, Neil D. Lawrence, \textit{Dataset Shift in Machine Learning}
+    \bibitem{pgnextract} David J. Barnes, \textit{pgn-extract: A Portable Game Notation (PGN) Manipulator for Chess Games}, \url{https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/}.
+    \bibitem{cutechess} Ilari Pihlajisto, Arto Jonsson, \textit{Cutechess: a graphical user interface, command-line interface and library for playing chess}, \url{https://github.com/cutechess/cutechess}.
+    \bibitem{ordo} Miguel A. Ballicora, \textit{Ordo: A scientifically sound calculation of relative strength}, \url{https://github.com/michiguel/Ordo}.
+    \bibitem{lc0} Leela Chess Zero Team, \textit{Leela Chess Zero}, \url{https://lczero.org/}.
+    \bibitem{stockfish} Stockfish Team, \textit{Stockfish: A powerful open-source chess engine}, \url{https://github.com/official-stockfish/Stockfish}.
+    \bibitem{nnuepytorch} Official Stockfish, \textit{nnue-pytorch}, \url{https://github.com/official-stockfish/nnue-pytorch}.
+    \bibitem{nnue.md} Dokumentacja NNUE, \textit{nnue-pytorch}, \url{https://github.com/official-stockfish/nnue-pytorch/blob/master/docs/nnue.md}
+    \bibitem{lichess} Lichess Database, \url{https://database.lichess.org}.
+\end{thebibliography}
+
+\listoffigures
 
 \end{document}
