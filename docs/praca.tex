@@ -47,7 +47,7 @@ Podstawowym celem projektu było stworzenie wirtualnego asystenta do gry w szach
 
 Pierwsze próby stworzenia własnego NNUE odbywały się na architekturze oferowanej przez Leela Chess Zero (\textit{LC0})~\cite{lc0}, jednak ze względu na problemy związane z dokumentacją oraz oferowanymi rozwiązaniami dla kart graficznych marki AMD jak brak możliwości pokrycia wszystkich wymogów bibliotek i sterowników jednocześnie, postanowiłem zrezygnować z LC0 na rzecz Stockfish~\cite{stockfish}, który ma rozbudowane repozytorium z narzędziami do trenowania i ogólnej pracy z NNUE nnue-pytorch~\cite{nnuepytorch}.
 
-Zbiorem danych uczących była oficjalna baza danych serwisu Lichess. Za pomocą autorskiego skryptu oraz narzędzia pgn-extract~\cite{barnes2014pgn} surowe zapisy gier zostały poddane selekcji, odrzucając partie niepełne lub potencjalnie zaburzające obiektywną ocenę pozycji. Oczyszczony zbiór podzieliłem na równe liczbowo, rozłączne koszyki Elo na podstawie uśrednionych rankingów graczy, a następnie przetransformowałem do skompresowanego formatu binarnego, wymaganego przez proces treningowy.
+Zbiorem danych uczących była oficjalna baza danych serwisu Lichess. Za pomocą autorskiego skryptu oraz narzędzia pgn-extract~\cite{pgnextract} surowe zapisy gier zostały poddane selekcji, odrzucając partie niepełne lub potencjalnie zaburzające obiektywną ocenę pozycji. Oczyszczony zbiór podzieliłem na równe liczbowo, rozłączne koszyki Elo na podstawie uśrednionych rankingów graczy, a następnie przetransformowałem do skompresowanego formatu binarnego, wymaganego przez proces treningowy.
 
 W celach weryfikacyjnych przeprowadziłem eksperymenty porównawcze obejmujące trzy próby:
 \begin{enumerate}
