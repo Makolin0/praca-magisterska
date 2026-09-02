@@ -31,6 +31,7 @@
     {\Large Praca magisterska \par}
     \vspace{2cm}
     {\Large Autor: Adam Zieliński \par}
+    {nr albumu: 313152 \par}
     {\Large Promotor: dr hab. Łukasz Mikulski, prof. UMK \par}
     \vfill
     {\Large Toruń, 2026 \par}
@@ -140,10 +141,7 @@ Mimo pomyślnego przygotowania procesu uczenia sieci za pomocą \texttt{nnue-pyt
 
 Silnik Stockfish napisany jest w języku C++, jest to złożony projekt z racji na wiele lat rozwoju przez społeczność. Więc nie do końca dziwi mnie fakt że wiele wersji silnika Stockfish było niekompatybilnych z moją architekturą nauczonych już sieci NNUE. A był on wymagany w celu załadowania wygenerowanych sieci podczas uczenia aby mogły być użyte w faktycznych grach z interfejsem UCI.
 
-
-% TODO - Opis problemów z odkryciem nieprawidłowego połącznenia nnue do stockfisha, i jego konsekwencje, fałszywe wyniki, silnik wgl sie nie zmieniał
-
-Jednak zanim odkryłem fakt że Stockfish nie jest kompatybilny z 
+Jednak zanim odkryłem fakt że Stockfish nie jest kompatybilny z wygenerowanymi plikami .nnue, udało się przeprowadzić turniej gdzie silniki grały między sobą. Oczywiście wyniki nie były poprawne i zwracały wnioski że każdy silnik nie ważne od epoki czy próby grał na bardzo zbliżonym poziomie, co poddało wątpliwościom poprawność przebiegu całego eksperymentu. Po głębszej analizie, gdy przetestowałem własne silniki przeciwko gotowym o określonym Elo, moje wygrywały w praktycznie każdej partii, co powinno być niemożliwe, szczególnie po zaledwie 10 epokach. Jedynym logicznym wyjaśnieniem był brak wykorzystywanie przez silniki podanych modeli ewaluacyjnych, co wyjaśniałoby również brak różnic między modelami podczas turniejów. Działo się tak ponieważ silniki Stockfish podczas kompilacji z kodu źródłowego miały używać eksperymentalnych NNUE, jednak prawdopodobnie przez brak kompatybilności architektury, którą odkryłem zaraz po tym fakcie, silnik budował się z podstawowym plikiem ewaluacyjnym, grającym na najwyższym możliwym poziomie.
 
 Rozwiązaniem tego problemu okazało się całkowite odizolowanie się od Stockfish i napisanie od podstaw własnego silnika w języku Python. Moje autorskie rozwiązanie mogłem dowoli modyfikować i dostosować pod własne sieci NNUE i umożliwić jego załadowanie, samodzielnie parsując wagi do macierzy \texttt{NumPy}. Umożliwiło to swobodne i natychmiastowe ładowanie dowolnej epoki sieci do prostego drzewa Alpha-Beta, z ominięciem ograniczeń architektonicznych C++ narzucanych przez środowisko klasycznego Stockfisha.
 
@@ -250,16 +248,14 @@ Ze względu na skomplikowane zależności bibliotek (\texttt{PyTorch}, \texttt{C
 \section{Metryki oceny}
 
 \begin{itemize}
-    \item Ranking Elo (turnieje Cutechess).
-    \item Zgodność z ruchami ludzkimi (Human-like Index).
-    \item Krzywe funkcji straty (Loss Curve).
+    \item \textbf{Ranking Elo (turnieje Cutechess):} Przy użyciu napisanego skryptu ewaluacyjnego zebrałem szczegółowe statystyki z przeprowadzonych turniejów, które były 200 rozgrywkami między każdą parą sąsiadujących modeli. Jako punkt zaczepienia przyjąłem pierwszy gotowy model (\textit{Ep 10}) jako mający Elo 0. Następnie Elo każdego kolejnego obliczałem jako różnicę wyniku poprzedniego modelu i wynik turnieju z aktualnym. Jeśli nowszy model razdił sobie gorzej od poprzednika to Elo spadało, a w przeciwnym wypadku rosło.
+    \item \textbf{Zgodność z ruchami ludzkimi (Human-like Index):} Za pomocą autorskiego skryptu zestawiłem odpowiedzi badanego silnika na zadane historyczne pozycje (przy płytkim przeszukiwaniu o głębokości równej 1) z faktycznymi posunięciami wykonanymi przez człowieka w tych samych partiach. Pozycje testowe pochodziły z przedziałów Elo odpowiadających używanemu w danym momencie koszykowi danych. Wskaźnik ten określa procentową zgodność przewidywań sieci z realnymi zagraniami szachistów na danym poziomie.
+    \item \textbf{Krzywe funkcji straty (Loss Curve):} Wartość funkcji błędu była rejestrowana automatycznie podczas procesu uczenia modelu w środowisku \texttt{nnue-pytorch}. Stanowiła ona wypadkową dwóch komponentów zdefiniowanych za pomocą ustawionego przeze mnie parametru $\lambda = 0{,}3$. W 30\% błąd był obliczany na podstawie różnicy między przewidywaniami sieci a idealną, statyczną oceną silnika Stockfish dla badanej pozycji, natomiast w pozostałych 70\% opierał się na przewidywaniu końcowego rezultatu historycznej partii pobranej z bazy Lichess.
 \end{itemize}
 
 \section{Wyniki eksperymentu}
 
-Przy użyciu napisanego skryptu ewaluacyjnego \texttt{run\_tournament\_nnue.py} zebrałem szczegółowe statystyki z przeprowadzonych turniejów.
-
-Na Rysunku~\ref{fig:elo_cumulative} można zaobserwować skumulowany postęp siły gry (wartość Elo) w kolejnych epokach treningowych dla grupy kontrolnej (uczonej na wymieszanych danych) po lewej oraz grupy badawczej (poddanej procesowi \textit{uczenia spiralnego}) po prawej. Pojawiła się bardzo ciekawa zależność, z biegiem uczenia się na tych samych danych, model okazywał się grać coraz gorzej. Dla silników kontrolnych, najlepszy okazał się ten z epoki 10, pierwszy zapisany checkpoint, analogicznie dla silników badawczych najlepszymi okazały się porównywalnie epoki 10, 110 i 210, czyli modele na podstawie pierwszych checkpointów po zmianie kubełków, potem w każdym przedziale Elo jedynie maleje.
+Na Rysunku~\ref{fig:elo_cumulative} można zaobserwować skumulowany postęp siły gry (wartość Elo) w kolejnych epokach treningowych dla grupy kontrolnej (uczonej na wymieszanych danych) po lewej oraz grupy badawczej (poddanej procesowi \textit{uczenia spiralnego}) po prawej. Pojawiła się bardzo ciekawa zależność, z biegiem uczenia się na tych samych danych, model okazywał się grać coraz gorzej. Dla silników kontrolnych, najlepszy okazał się ten z epoki 10, pierwszy zapisany checkpoint, analogicznie dla silników badawczych najlepszymi okazały się porównywalnie epoki 10, 110 i 210, gdzie niejako zmiana kubełka cofała siłę modelu do stanu początkowego. W każdym innym przypadku Elo jedynie maleje.
 
 Dodatkowo można zwrócić uwagę na bądź co bądź spadek, jednak niemalże monotoniczny w przypadku pojedynczych kubełków w teście badawczym, a bardziej skaczący w teście kontrolnym. Należy patrzeć na te wyniki mając na uwadze margines błędu wynoszący średnio $\pm 35$ punktów, jednakże to nie niweluje tendencji spadkowej przez cały proces uczenia dla jednych danych, oraz skoków Elo podczas zmiany kubełków.
 
