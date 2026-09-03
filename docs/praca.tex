@@ -97,34 +97,6 @@ Chcę zbadać zachowania silnika, który jest uczony coraz to lepszej jakości r
 
 \chapter{Przegląd technologii}
 
-\section{Silnik Stockfish i architektura NNUE}
-
-Stockfish~\cite{stockfish} to jeden z najsilniejszych na świecie, otwartoźródłowych silników szachowych, rozwijany od 2008 roku. Tradycyjnie opierał się na algorytmie przeszukiwania drzewa wariantów Alpha-Beta uzupełnionym o ręcznie projektowane funkcje ewaluacji (\textit{HandCrafted Evaluation - HCE}), które oceniały pozycję na podstawie reguł czysto taktycznych i pozycyjnych.
-
-Trzon silnika opiera się najczęściej na algorytmie \textit{Alpha-Beta}~\cite{knuth1975analysis}, który stanowi optymalizację algorytmu Minimax. Drzewo wszystkich możliwych wariantów planszy jest przeszukiwane i każda opcja oceniana przez funkcję ewaluacji. Gałęzie odrzucane są na wczesnym etapie (\textit{pruning}), gdy tylko algorytm zyska pewność, że konkretna odnoga z dużą pewnością nie zostanie wybrana ze względu na znalezioną wcześniej silniejszą alternatywę. Pozwala to na drastyczne obniżenie złożoności obliczeniowej. Aby zminimalizować błędy tzw. efektu horyzontu (gdy wymiana bierek zatrzymuje się na płytkiej głębokości i sztucznie zawyża wynik jednego z graczy), do algorytmu dodawane jest \textit{Quiescence Search}, które wymusza dokończenie bicia przed pobraniem oceny z funkcji ewaluacyjnej. W moim autorskim silniku zaimplementowałem ten algorytm.
-
-Przez wiele lat proces ewaluacji wspomnianego drzewa opierał się o ręcznie zdefiniowaną heurystykę (\textit{HandCrafted Evaluation - HCE}). Składały się na nią setki parametrów spisywanych i optymalizowanych latami, takich jak tablice wartości pól dla danych bierek (\textit{PST - Piece-Square Tables}), drobne punkty procentowe przewagi za kontrolę centrum, posiadanie par gońców czy punkty ujemne za piony izolowane. Przy pojawieniu się NNUE większość tych statycznych heurystyk uległa całkowitemu zastąpieniu na rzecz jednej niewielkiej sieci neuronowej.
-
-NNUE (\textit{Efficiently Updatable Neural Network}) zostało wprowadzone w roku 2020, pierwotnie zaprojektowanej przez Yu Nasu dla shogi~\cite{nasu2018efficiently}. NNUE to płytka, w pełni połączona sieć neuronowa zintegrowana bezpośrednio z silnikiem przeszukującym, która zastąpiła tradycyjną funkcję HCE. Główną zaletą tej architektury jest jej dopasowanie do specyfiki gry w szachy. Przy wykonywaniu pojedynczego ruchu na planszy większość cech pozycji nie ulega zmianie, co pozwala na przyrostowe aktualizowanie wartości aktywacji pierwszej warstwy sieci zamiast przeliczania całej pozycji od zera. W wersjach takich jak \textit{HalfKAv2\_hm\string^}) stan planszy reprezentowany jest jako rzadki wektor cech opisujący relacje pomiędzy pozycją króla a położeniem pozostałych bierek, co pozwala na ocenę dynamiki pozycji przy zachowaniu wysokiej wydajności obliczeniowej.
-
-Zastosowany w tej pracy model używa struktury danych wejściowych (cech) oznaczonych jako \textit{HalfKAv2\_hm\string^}. Przedrostek \textit{Half} oznacza ewaluację dokonywaną z perspektywy połowy planszy, czyli tylko dla gracza, który ma w danej chwili wykonać ruch. Litery \textit{K} (King) oraz \textit{A} (All) informują o tym, że wektor koduje absolutnie wszystkie relacje pozycyjne pomiędzy Królem a każdą bierką na planszy, podczas gdy \textit{v2} oznacza drugą, ulepszoną generację tego zbioru. Kluczowy jest jednak przyrostek \textit{hm} (\textit{highly modified}), który wprowadza silnie zmodyfikowaną strukturę podziału. W tej iteracji wejściowa warstwa rzadka ma rozmiar 704 cech przypadających na jeden z 32 osobnych wirtualnych "koszyków" Króla (11 typów bierek pomnożonych przez 64 dostępne pola na szachownicy) oraz dodatkowe 8 koszyków układu \textit{layer-stacks} zależnych od liczby bierek pozostałych na stole.
-
-\section{Baza danych Lichess}
-
-Lichess.org~\cite{lichess} jest jedną z największych na świecie otwartych platform szachowych, regularnie udostępniającą publicznie kompletne bazy danych partii rozegranych przez użytkowników serwisu. Zbiór ten stanowi idealne źródło danych treningowych na potrzeby eksperymentów z uczeniem maszynowym ze względu na swoją reprezentatywność, wolumen oraz szczegółowość metadanych.
-
-Każda partia w bazie zapisana jest w formacie PGN (\textit{Portable Game Notation}) i zawiera m.in. dokładne rankingi Elo obu graczy, kontrolę czasu oraz uzgodniony wynik. Różnorodność poziomów umiejętności graczy od początkujących (\textit{Elo < 1000}) po arcymistrzów (\textit{Elo > 2700}) jest kluczowym elementem dla przeprowadzanego eksperymentu uczenia spiralnego. Pozwala z jednego pobranego pliku wyodrębnić kubełki przedziałów Elo, dzięki zapisowi o nich w metadanych każdej rozgrywki.
-
-\section{Narzędzia pomocnicze}
-
-Proces przetwarzania danych, przeprowadzenia treningu oraz automatyzacji turniejów ewaluacyjnych wymagał użycia danego zestawu dodatkowych narzędzi open-source:
-
-\begin{itemize}
-    \item \textbf{pgn-extract}~\cite{pgnextract} zaawansowane narzędzie wiersza poleceń przeznaczone do przeszukiwania, filtrowania i parsowania plików PGN. W ramach przeprowadzonego eksperymentu posłużyło do wstępnego filtrowania partii według kryteriów takich jak minimalna liczba posunięć (filtracja zagrań zbyt krótkich lub porzuconych), gier bez informacji o poziomie Elo graczy oraz odrzucenie partii zakończonych nietypowo (np. z powodu problemów technicznych z połączeniem).
-    \item \textbf{Cutechess}~\cite{cutechess} narzędzie wiersza poleceń służące do automatycznego przeprowadzania turniejów pomiędzy silnikami szachowymi operującymi na protokole UCI (Universal Chess Interface). Pozwoliło na obiektywną weryfikację siły gry poszczególnych iteracji modelu w kontrolowanych warunkach (z jednakową kontrolą czasu i zdefiniowanymi pozycjami otwarć). Następnie każda rozgrywka została zapisana w pliku PGN do dalszej analizy.
-    \item \textbf{Ordo}~\cite{ordo} narzędzie statystyczne dedykowane do wyznaczania rankingów Elo na podstawie wyników bezpośrednich pojedynków pomiędzy silnikami. Pozwala na precyzyjne obliczenie siły gry modelu wraz z przedziałami ufności na podstawie rozegranych turniejów w Cutechess.
-\end{itemize}
-
 \section{Wyzwania technologiczne i implementacyjne}
 
 Realizacja eksperymentu wiązała się z koniecznością rozwiązania istotnych problemów natury technicznej, z których główne dotyczyły wyboru odpowiedniej architektury sztucznej inteligencji oraz jej integracji z modułem ewaluacyjnym i turniejowym.
@@ -144,6 +116,36 @@ Silnik Stockfish napisany jest w języku C++, jest to złożony projekt z racji 
 Jednak zanim odkryłem fakt, że Stockfish nie jest kompatybilny z wygenerowanymi plikami .nnue, udało się przeprowadzić turniej, gdzie silniki grały między sobą. Oczywiście wyniki nie były poprawne i zwracały wnioski, że każdy silnik nieważne od epoki czy próby grał na bardzo zbliżonym poziomie, co poddało wątpliwościom poprawność przebiegu całego eksperymentu. Po głębszej analizie, gdy przetestowałem własne silniki przeciwko gotowym o określonym Elo, moje wygrywały w praktycznie każdej partii, co powinno być niemożliwe, szczególnie po zaledwie 10 epokach. Jedynym logicznym wyjaśnieniem był brak wykorzystywanie przez silniki podanych modeli ewaluacyjnych, co wyjaśniałoby również brak różnic między modelami podczas turniejów. Działo się tak, ponieważ silniki Stockfish podczas kompilacji z kodu źródłowego miały używać eksperymentalnych NNUE, jednak prawdopodobnie przez brak kompatybilności architektury, którą odkryłem zaraz po tym fakcie, silnik budował się z podstawowym plikiem ewaluacyjnym, grającym na najwyższym możliwym poziomie.
 
 Rozwiązaniem tego problemu okazało się całkowite odizolowanie się od Stockfish i napisanie od podstaw własnego silnika w języku Python. Moje autorskie rozwiązanie mogłem dowoli modyfikować i dostosować pod własne sieci NNUE i umożliwić jego załadowanie, samodzielnie parsując wagi do macierzy \texttt{NumPy}. Umożliwiło to swobodne i natychmiastowe ładowanie dowolnej epoki sieci do prostego drzewa Alpha-Beta, z ominięciem ograniczeń architektonicznych C++ narzucanych przez środowisko klasycznego Stockfisha.
+
+\section{Ostatecznie wykorzystana architektura}
+
+\subsection{Silnik Stockfish i architektura NNUE}
+
+Stockfish~\cite{stockfish} to jeden z najsilniejszych na świecie, otwartoźródłowych silników szachowych, rozwijany od 2008 roku. Tradycyjnie opierał się na algorytmie przeszukiwania drzewa wariantów Alpha-Beta uzupełnionym o ręcznie projektowane funkcje ewaluacji (\textit{HandCrafted Evaluation - HCE}), które oceniały pozycję na podstawie reguł czysto taktycznych i pozycyjnych.
+
+Trzon silnika opiera się najczęściej na algorytmie \textit{Alpha-Beta}~\cite{knuth1975analysis}, który stanowi optymalizację algorytmu Minimax. Drzewo wszystkich możliwych wariantów planszy jest przeszukiwane i każda opcja oceniana przez funkcję ewaluacji. Gałęzie odrzucane są na wczesnym etapie (\textit{pruning}), gdy tylko algorytm zyska pewność, że konkretna odnoga z dużą pewnością nie zostanie wybrana ze względu na znalezioną wcześniej silniejszą alternatywę. Pozwala to na drastyczne obniżenie złożoności obliczeniowej. Aby zminimalizować błędy tzw. efektu horyzontu (gdy wymiana bierek zatrzymuje się na płytkiej głębokości i sztucznie zawyża wynik jednego z graczy), do algorytmu dodawane jest \textit{Quiescence Search}, które wymusza dokończenie bicia przed pobraniem oceny z funkcji ewaluacyjnej. W moim autorskim silniku zaimplementowałem ten algorytm.
+
+Przez wiele lat proces ewaluacji wspomnianego drzewa opierał się o ręcznie zdefiniowaną heurystykę (\textit{HandCrafted Evaluation - HCE}). Składały się na nią setki parametrów spisywanych i optymalizowanych latami, takich jak tablice wartości pól dla danych bierek (\textit{PST - Piece-Square Tables}), drobne punkty procentowe przewagi za kontrolę centrum, posiadanie par gońców czy punkty ujemne za piony izolowane. Przy pojawieniu się NNUE większość tych statycznych heurystyk uległa całkowitemu zastąpieniu na rzecz jednej niewielkiej sieci neuronowej.
+
+NNUE (\textit{Efficiently Updatable Neural Network}) zostało wprowadzone w roku 2020, pierwotnie zaprojektowanej przez Yu Nasu dla shogi~\cite{nasu2018efficiently}. NNUE to płytka, w pełni połączona sieć neuronowa zintegrowana bezpośrednio z silnikiem przeszukującym, która zastąpiła tradycyjną funkcję HCE. Główną zaletą tej architektury jest jej dopasowanie do specyfiki gry w szachy. Przy wykonywaniu pojedynczego ruchu na planszy większość cech pozycji nie ulega zmianie, co pozwala na przyrostowe aktualizowanie wartości aktywacji pierwszej warstwy sieci zamiast przeliczania całej pozycji od zera. W wersjach takich jak \textit{HalfKAv2\_hm\string^}) stan planszy reprezentowany jest jako rzadki wektor cech opisujący relacje pomiędzy pozycją króla a położeniem pozostałych bierek, co pozwala na ocenę dynamiki pozycji przy zachowaniu wysokiej wydajności obliczeniowej.
+
+Zastosowany w tej pracy model używa struktury danych wejściowych (cech) oznaczonych jako \textit{HalfKAv2\_hm\string^}. Przedrostek \textit{Half} oznacza ewaluację dokonywaną z perspektywy połowy planszy, czyli tylko dla gracza, który ma w danej chwili wykonać ruch. Litery \textit{K} (King) oraz \textit{A} (All) informują o tym, że wektor koduje absolutnie wszystkie relacje pozycyjne pomiędzy Królem a każdą bierką na planszy, podczas gdy \textit{v2} oznacza drugą, ulepszoną generację tego zbioru. Kluczowy jest jednak przyrostek \textit{hm} (\textit{highly modified}), który wprowadza silnie zmodyfikowaną strukturę podziału. W tej iteracji wejściowa warstwa rzadka ma rozmiar 704 cech przypadających na jeden z 32 osobnych wirtualnych "koszyków" Króla (11 typów bierek pomnożonych przez 64 dostępne pola na szachownicy) oraz dodatkowe 8 koszyków układu \textit{layer-stacks} zależnych od liczby bierek pozostałych na stole.
+
+\subsection{Baza danych Lichess}
+
+Lichess.org~\cite{lichess} jest jedną z największych na świecie otwartych platform szachowych, regularnie udostępniającą publicznie kompletne bazy danych partii rozegranych przez użytkowników serwisu. Zbiór ten stanowi idealne źródło danych treningowych na potrzeby eksperymentów z uczeniem maszynowym ze względu na swoją reprezentatywność, wolumen oraz szczegółowość metadanych.
+
+Każda partia w bazie zapisana jest w formacie PGN (\textit{Portable Game Notation}) i zawiera m.in. dokładne rankingi Elo obu graczy, kontrolę czasu oraz uzgodniony wynik. Różnorodność poziomów umiejętności graczy od początkujących (\textit{Elo < 1000}) po arcymistrzów (\textit{Elo > 2700}) jest kluczowym elementem dla przeprowadzanego eksperymentu uczenia spiralnego. Pozwala z jednego pobranego pliku wyodrębnić kubełki przedziałów Elo, dzięki zapisowi o nich w metadanych każdej rozgrywki.
+
+\subsection{Narzędzia pomocnicze}
+
+Proces przetwarzania danych, przeprowadzenia treningu oraz automatyzacji turniejów ewaluacyjnych wymagał użycia danego zestawu dodatkowych narzędzi open-source:
+
+\begin{itemize}
+    \item \textbf{pgn-extract}~\cite{pgnextract} zaawansowane narzędzie wiersza poleceń przeznaczone do przeszukiwania, filtrowania i parsowania plików PGN. W ramach przeprowadzonego eksperymentu posłużyło do wstępnego filtrowania partii według kryteriów takich jak minimalna liczba posunięć (filtracja zagrań zbyt krótkich lub porzuconych), gier bez informacji o poziomie Elo graczy oraz odrzucenie partii zakończonych nietypowo (np. z powodu problemów technicznych z połączeniem).
+    \item \textbf{Cutechess}~\cite{cutechess} narzędzie wiersza poleceń służące do automatycznego przeprowadzania turniejów pomiędzy silnikami szachowymi operującymi na protokole UCI (Universal Chess Interface). Pozwoliło na obiektywną weryfikację siły gry poszczególnych iteracji modelu w kontrolowanych warunkach (z jednakową kontrolą czasu i zdefiniowanymi pozycjami otwarć). Następnie każda rozgrywka została zapisana w pliku PGN do dalszej analizy.
+    \item \textbf{Ordo}~\cite{ordo} narzędzie statystyczne dedykowane do wyznaczania rankingów Elo na podstawie wyników bezpośrednich pojedynków pomiędzy silnikami. Pozwala na precyzyjne obliczenie siły gry modelu wraz z przedziałami ufności na podstawie rozegranych turniejów w Cutechess.
+\end{itemize}
 
 \chapter{Przygotowanie danych}
 
